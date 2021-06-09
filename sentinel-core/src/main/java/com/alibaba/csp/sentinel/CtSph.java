@@ -48,6 +48,9 @@ public class CtSph implements Sph {
      * Same resource({@link ResourceWrapper#equals(Object)}) will share the same
      * {@link ProcessorSlotChain}, no matter in which {@link Context}.
      */
+    /**
+     * 资源 与处理SlotChain 的映射关系
+     */
     private static volatile Map<ResourceWrapper, ProcessorSlotChain> chainMap
         = new HashMap<ResourceWrapper, ProcessorSlotChain>();
 
@@ -114,25 +117,44 @@ public class CtSph implements Sph {
         return asyncEntryWithPriorityInternal(resourceWrapper, count, false, args);
     }
 
+    /**
+     *
+     * @param resourceWrapper
+     * @param count 默认值为1
+     * @param prioritized 默认值为 false
+     * @param args
+     * @return
+     * @throws BlockException
+     */
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
+        /**
+         * 从当前线程中获取上下文
+         * 一个请求会占用一个线程 一个线程会绑定一个context
+         *
+         */
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
+            /**
+             * context的数量达到了阈值 则这里仅仅创建一个entry
+             */
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
             // so here init the entry only. No rule checking will be done.
             return new CtEntry(resourceWrapper, null, context);
         }
 
         if (context == null) {
+            //没有context为null的时候 则创建一个 context 并放入threadLocal
             // Using default context.
             context = InternalContextUtil.internalEnter(Constants.CONTEXT_DEFAULT_NAME);
         }
 
         // Global switch is close, no rule checking will do.
         if (!Constants.ON) {
+            //若全局开关是关闭的 则直接返回一个无需做规则检测的资源操作对象
             return new CtEntry(resourceWrapper, null, context);
         }
-
+        //查找SlotChain
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -140,11 +162,17 @@ public class CtSph implements Sph {
          * so no rule checking will be done.
          */
         if (chain == null) {
+            //没有找到chain 则意味着请求数量超过了阈值
             return new CtEntry(resourceWrapper, null, context);
         }
-
+        /**
+         * 封装一个entry对象
+         * context的curEntry 会设置为CtEntry对象
+         */
         Entry e = new CtEntry(resourceWrapper, chain, context);
+
         try {
+            //对资源进行操作
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
             e.exit(count, args);
@@ -192,17 +220,28 @@ public class CtSph implements Sph {
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+        /**
+         * 从缓存map中获取当前资源的SlotChain
+         * 缓存的key为资源的包装类 value为相关的slotChain
+         */
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
+        /**
+         * DCL 若缓存中没有相关的slotChain 则创建一个并放入到缓存中
+         */
         if (chain == null) {
             synchronized (LOCK) {
                 chain = chainMap.get(resourceWrapper);
                 if (chain == null) {
+                    /**
+                     * 缓存map超过阈值 直接返回null 不再创建新的chain
+                     */
                     // Entry size limit.
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
                         return null;
                     }
-
+                    //创建新的chain 并加入到缓存map
                     chain = SlotChainProvider.newSlotChain();
+                    //cow模式
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);
                     newMap.putAll(chainMap);
@@ -337,13 +376,21 @@ public class CtSph implements Sph {
     @Override
     public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, Object[] args)
         throws BlockException {
+        //count 为 1 表示当前请求可以增加多少个计数
+
         return entryWithType(name, resourceType, entryType, count, false, args);
     }
 
     @Override
     public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized,
                                Object[] args) throws BlockException {
+        /**
+         * 将信息封装为一个资源对象
+         *
+         */
         StringResourceWrapper resource = new StringResourceWrapper(name, entryType, resourceType);
+        //prioritized 为true 则表示当前访问必须等待 '根据其优先级计算出来的时间'后 才可以通过
+        //prioritized 为 false 则当前请求无需等待
         return entryWithPriority(resource, count, prioritized, args);
     }
 

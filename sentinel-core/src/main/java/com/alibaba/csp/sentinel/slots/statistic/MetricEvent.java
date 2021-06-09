@@ -15,21 +15,32 @@
  */
 package com.alibaba.csp.sentinel.slots.statistic;
 
-/**
+/** 数据统计的维度
  * @author Eric Zhao
  */
 public enum MetricEvent {
 
     /**
      * Normal pass.
+     * 通过请求维度
      */
     PASS,
     /**
      * Normal block.
+     *限流请求维度
      */
     BLOCK,
+    /**
+     * 异常请求维度
+     */
     EXCEPTION,
+    /**
+     * 成功
+     */
     SUCCESS,
+    /**
+     * 响应时间
+     */
     RT,
 
     /**

@@ -36,9 +36,15 @@ class CtEntry extends Entry {
 
     protected Entry parent = null;
     protected Entry child = null;
-
+    /**
+     * 资源的SlotChain 处理器责任链
+     */
     protected ProcessorSlot<Object> chain;
+    /**
+     * 线程的context
+     */
     protected Context context;
+
     protected LinkedList<BiConsumer<Context, Entry>> exitHandlers;
 
     CtEntry(ResourceWrapper resourceWrapper, ProcessorSlot<Object> chain, Context context) {
@@ -106,6 +112,7 @@ class CtEntry extends Entry {
             } else {
                 // Go through the onExit hook of all slots.
                 if (chain != null) {
+                    //执行slotChain的exit方法
                     chain.exit(context, resourceWrapper, count, args);
                 }
                 // Go through the existing terminate handlers (associated to this invocation).

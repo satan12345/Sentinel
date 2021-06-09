@@ -27,16 +27,23 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLeapArray;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
-/**
+/**一个使用数组保存数据的计量器类
  * The basic metric class in Sentinel using a {@link BucketLeapArray} internal.
  *
  * @author jialiang.linjl
  * @author Eric Zhao
  */
 public class ArrayMetric implements Metric {
-
+    /**
+     * 数据保存在data中
+     */
     private final LeapArray<MetricBucket> data;
 
+    /**
+     *
+     * @param sampleCount 样本窗口数量
+     * @param intervalInMs 时间窗长度
+     */
     public ArrayMetric(int sampleCount, int intervalInMs) {
         this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
     }
@@ -106,10 +113,11 @@ public class ArrayMetric implements Metric {
 
     @Override
     public long pass() {
+        //更新array中当前时间点所在的样本窗口实例的数据
         data.currentWindow();
         long pass = 0;
-        List<MetricBucket> list = data.values();
-
+        //将当前时间创中所有的样布统计的value 记录到result中
+        List<MetricBucket> list = data.values();        //遍历 将pass维度的数据取出求和
         for (MetricBucket window : list) {
             pass += window.pass();
         }
@@ -241,7 +249,9 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void addPass(int count) {
+        //获取当前时间点所在的样本窗口
         WindowWrap<MetricBucket> wrap = data.currentWindow();
+        //将当前请求的计数量增加到当前样本窗口的统计数据中去
         wrap.value().addPass(count);
     }
 

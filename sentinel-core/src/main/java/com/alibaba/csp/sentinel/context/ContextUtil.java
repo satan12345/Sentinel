@@ -118,27 +118,43 @@ public class ContextUtil {
     }
 
     protected static Context trueEnter(String name, String origin) {
+        //尝试从threadLocal中获取context
         Context context = contextHolder.get();
         if (context == null) {
+            /**
+             *  从缓存map中获取
+             *  缓存map的key为context的名称 value为 EntranceNode
+             */
             Map<String, DefaultNode> localCacheNameMap = contextNameNodeMap;
             DefaultNode node = localCacheNameMap.get(name);
             if (node == null) {
+
                 if (localCacheNameMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                    /**
+                     * 缓存Map的size操作阈值
+                     * 则返回null_context 并设置到上下围
+                     */
                     setNullContext();
                     return NULL_CONTEXT;
                 } else {
+                    //存在node节点
                     LOCK.lock();
                     try {
+                        //dcl 双层锁检查
                         node = contextNameNodeMap.get(name);
                         if (node == null) {
                             if (contextNameNodeMap.size() > Constants.MAX_CONTEXT_NAME_SIZE) {
+                                //超过阈值直接返回
                                 setNullContext();
                                 return NULL_CONTEXT;
                             } else {
+                                //创建entranceNode
                                 node = new EntranceNode(new StringResourceWrapper(name, EntryType.IN), null);
                                 // Add entrance node.
+                                //将新建的entranceNode 添加为ROOT的子节点
                                 Constants.ROOT.addChild(node);
-
+                                //新建map 从原有map的数据放入新的map中 并替换老的map
+                                //为了防止迭代稳定性问题
                                 Map<String, DefaultNode> newMap = new HashMap<>(contextNameNodeMap.size() + 1);
                                 newMap.putAll(contextNameNodeMap);
                                 newMap.put(name, node);
@@ -150,8 +166,10 @@ public class ContextUtil {
                     }
                 }
             }
+            //封装context 放入threadLocal
             context = new Context(node, name);
             context.setOrigin(origin);
+            //放入当前线程中
             contextHolder.set(context);
         }
 

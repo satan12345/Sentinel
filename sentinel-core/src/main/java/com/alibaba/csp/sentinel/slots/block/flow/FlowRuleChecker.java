@@ -46,9 +46,11 @@ public class FlowRuleChecker {
         if (ruleProvider == null || resource == null) {
             return;
         }
+        //获取到指定资源的所有流控规则
         Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
+                //判断是否可以通过流控规则 不能则抛出异常
                 if (!canPassCheck(rule, context, node, count, prioritized)) {
                     throw new FlowException(rule.getLimitApp(), rule);
                 }
@@ -63,22 +65,27 @@ public class FlowRuleChecker {
 
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                                     boolean prioritized) {
+        //规则中获取要限定的来源 default
         String limitApp = rule.getLimitApp();
         if (limitApp == null) {
+            //来源为空 则请求直接通过
             return true;
         }
 
         if (rule.isClusterMode()) {
+            //集群模式
             return passClusterCheck(rule, context, node, acquireCount, prioritized);
         }
-
+        // 单机模式
         return passLocalCheck(rule, context, node, acquireCount, prioritized);
     }
 
     private static boolean passLocalCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                           boolean prioritized) {
+        //通过规则形成选择出的规则Node
         Node selectedNode = selectNodeByRequesterAndStrategy(rule, context, node);
         if (selectedNode == null) {
+            //没有规则 则直接返回true  表示通过检测
             return true;
         }
 
@@ -114,8 +121,11 @@ public class FlowRuleChecker {
 
     static Node selectNodeByRequesterAndStrategy(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node) {
         // The limit app should not be empty.
+        //default
         String limitApp = rule.getLimitApp();
+        //策略 0
         int strategy = rule.getStrategy();
+        //来下
         String origin = context.getOrigin();
 
         if (limitApp.equals(origin) && filterOrigin(origin)) {

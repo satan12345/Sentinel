@@ -32,31 +32,57 @@ import java.lang.reflect.Method;
  *
  * @author Eric Zhao
  */
+
+/**
+ * AsepectJ切面
+ */
 @Aspect
 public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
 
+    /**
+     * 指定切入点为 SentinelResource
+     *
+     */
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void sentinelResourceAnnotationPointcut() {
     }
 
+    /**
+     * 环绕通知
+     * @param pjp
+     * @return
+     * @throws Throwable
+     */
     @Around("sentinelResourceAnnotationPointcut()")
     public Object invokeResourceWithSentinel(ProceedingJoinPoint pjp) throws Throwable {
         Method originMethod = resolveMethod(pjp);
-
+        //获取注解
         SentinelResource annotation = originMethod.getAnnotation(SentinelResource.class);
         if (annotation == null) {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
+        //获取资源名 有指定value则为 value值 没有指定为为方法名
         String resourceName = getResourceName(annotation.value(), originMethod);
+        // EntryType entryType() default EntryType.OUT; 默认值
         EntryType entryType = annotation.entryType();
+        // int resourceType() default 0;
         int resourceType = annotation.resourceType();
         Entry entry = null;
         try {
+            //获取资源的entry
+            /**
+             * 每一次资源调用都会创建一个 Entry。Entry 包含了资源名、curNode（当前统计节点）、
+             * originNode（来源统计节点）等信息。
+             */
+            //限流逻辑
             entry = SphU.entry(resourceName, resourceType, entryType, pjp.getArgs());
+            //调用目标方法
             Object result = pjp.proceed();
+            //返回结果
             return result;
         } catch (BlockException ex) {
+            //限流咯
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
             Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();

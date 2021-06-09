@@ -42,21 +42,26 @@ public class FlowRule extends AbstractRule {
 
     public FlowRule(String resourceName) {
         super();
+        //设置资源名
         setResource(resourceName);
+        //设置来源
         setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
     }
 
     /**
+     * 阈值类型 线程数 还是QPS
      * The threshold type of flow control (0: thread count, 1: QPS).
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 
     /**
+     * 流控的数量
      * Flow control threshold count.
      */
     private double count;
 
     /**
+     * 流控策略
      * Flow control strategy based on invocation chain.
      *
      * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);
@@ -66,23 +71,29 @@ public class FlowRule extends AbstractRule {
     private int strategy = RuleConstant.STRATEGY_DIRECT;
 
     /**
+     * 关联资源
      * Reference resource in flow control with relevant resource or context.
      */
     private String refResource;
 
-    /**
+    /**流控效果 0 表示快速失败
+     *         1 预热 令牌桶算法
+     *         2 排队等待 漏斗算法
+     *         3 warm up +排队
      * Rate limiter control behavior.
      * 0. default(reject directly), 1. warm up, 2. rate limiter, 3. warm up + rate limiter
      */
     private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
-
+    //warm 预热时长
     private int warmUpPeriodSec = 10;
 
-    /**
+    /** 排队等待超时时间
      * Max queueing time in rate limiter behavior.
      */
     private int maxQueueingTimeMs = 500;
-
+    /**
+     * 是否集群
+     */
     private boolean clusterMode;
     /**
      * Flow rule config for cluster mode.

@@ -103,15 +103,18 @@ public abstract class AbstractSentinelAspectSupport {
             }
 
             try {
+                //判断是否是静态的
                 if (isStatic(fallbackMethod)) {
                     return fallbackMethod.invoke(null, args);
                 }
+                //执行熔断方法
                 return fallbackMethod.invoke(pjp.getTarget(), args);
             } catch (InvocationTargetException e) {
                 // throw the actual exception
                 throw e.getTargetException();
             }
         }
+        //执行默认的熔断方法
         // If fallback is absent, we'll try the defaultFallback if provided.
         return handleDefaultFallback(pjp, defaultFallback, fallbackClass, ex);
     }
@@ -140,8 +143,18 @@ public abstract class AbstractSentinelAspectSupport {
 
     protected Object handleBlockException(ProceedingJoinPoint pjp, SentinelResource annotation, BlockException ex)
         throws Throwable {
-
+        /**
+         *     @SentinelResource(value = "testD"
+         *         //降级
+         * //            blockHandler =
+         * //            ,blockHandlerClass =
+         *             //熔断
+         * //            ,fallback =
+         * //            ,fallbackClass =
+         *     )
+         */
         // Execute block handler if configured.
+        //执行降级方法
         Method blockHandlerMethod = extractBlockHandlerMethod(pjp, annotation.blockHandler(),
             annotation.blockHandlerClass());
         if (blockHandlerMethod != null) {
@@ -150,7 +163,9 @@ public abstract class AbstractSentinelAspectSupport {
             Object[] args = Arrays.copyOf(originArgs, originArgs.length + 1);
             args[args.length - 1] = ex;
             try {
+                //是否静态
                 if (isStatic(blockHandlerMethod)) {
+                    //执行降级方法
                     return blockHandlerMethod.invoke(null, args);
                 }
                 return blockHandlerMethod.invoke(pjp.getTarget(), args);
@@ -159,7 +174,7 @@ public abstract class AbstractSentinelAspectSupport {
                 throw e.getTargetException();
             }
         }
-
+        //执行熔断方法
         // If no block handler is present, then go to fallback.
         return handleFallback(pjp, annotation, ex);
     }

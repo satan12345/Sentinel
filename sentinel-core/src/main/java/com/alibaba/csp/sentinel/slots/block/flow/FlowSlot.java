@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.spi.Spi;
 import com.alibaba.csp.sentinel.util.AssertUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
 
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,10 @@ import java.util.Map;
  * @author jialiang.linjl
  * @author Eric Zhao
  */
+
+/**
+ * 限流的规则
+ */
 @Spi(order = Constants.ORDER_FLOW_SLOT)
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
@@ -161,13 +166,15 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
+        //检测并应用流控规则
         checkFlow(resourceWrapper, context, node, count, prioritized);
-
+        //触发下一个slot
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
         throws BlockException {
+        //检测流控规则
         checker.checkFlow(ruleProvider, resource, context, node, count, prioritized);
     }
 
@@ -180,8 +187,14 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         @Override
         public Collection<FlowRule> apply(String resource) {
             // Flow rule map should not be null.
-            Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
-            return flowRules.get(resource);
+            /**
+             * 获取所有资源的流控规则
+             * key为资源名称  value为该资源上加载的所有的流控故障
+             */
+//            Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
+//            //获取自定资源的流控规则
+//            return flowRules.get(resource);
+            return FlowRuleManager.getFlowRuleMap().get(resource);
         }
     };
 }

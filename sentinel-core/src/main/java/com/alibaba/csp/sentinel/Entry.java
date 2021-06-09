@@ -63,7 +63,9 @@ public abstract class Entry implements AutoCloseable {
      * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
      */
     private Node originNode;
-
+    /**
+     * 存放异常
+     */
     private Throwable error;
     private BlockException blockError;
 

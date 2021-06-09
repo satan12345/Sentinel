@@ -133,7 +133,8 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
     private volatile Map<String, DefaultNode> map = new HashMap<String, DefaultNode>(10);
 
     @Override
-    public void entry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
+    public void entry(Context context, ResourceWrapper resourceWrapper, Object obj, int count,
+                      boolean prioritized, Object... args)
         throws Throwable {
         /*
          * It's interesting that we use context name rather resource name as the map key.
@@ -153,24 +154,31 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
          * The answer is all {@link DefaultNode}s with same resource name share one
          * {@link ClusterNode}. See {@link ClusterBuilderSlot} for detail.
          */
+        //创建调用树
+        //获取DefaultNode
         DefaultNode node = map.get(context.getName());
+        //dcl
         if (node == null) {
             synchronized (this) {
                 node = map.get(context.getName());
                 if (node == null) {
+                    //创建一个DefaultNode  并添加到缓存
                     node = new DefaultNode(resourceWrapper, null);
+                    //COW
                     HashMap<String, DefaultNode> cacheMap = new HashMap<String, DefaultNode>(map.size());
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
                     map = cacheMap;
                     // Build invocation tree
+                    //将新建的Node 添加到调用树中
                     ((DefaultNode) context.getLastNode()).addChild(node);
                 }
 
             }
         }
-
+        //设置到Context的curEntry的curNode属性中
         context.setCurNode(node);
+        //触发下一个节点
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 

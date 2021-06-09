@@ -26,14 +26,14 @@ import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
  */
 public interface CircuitBreaker {
 
-    /**
+    /**获取降级规则
      * Get the associated circuit breaking rule.
      *
      * @return associated circuit breaking rule
      */
     DegradeRule getRule();
 
-    /**
+    /** 尝试判断请求是否可以通过 true 可以通不用降级 否则降级
      * Acquires permission of an invocation only if it is available at the time of invoking.
      *
      * @param context context of current invocation
@@ -41,14 +41,14 @@ public interface CircuitBreaker {
      */
     boolean tryPass(Context context);
 
-    /**
+    /** 获取熔断器的当前状态
      * Get current state of the circuit breaker.
      *
      * @return current state of the circuit breaker
      */
     State currentState();
 
-    /**
+    /** 回调
      * <p>Record a completed request with the context and handle state transformation of the circuit breaker.</p>
      * <p>Called when a <strong>passed</strong> invocation finished.</p>
      *
@@ -62,9 +62,12 @@ public interface CircuitBreaker {
     enum State {
         /**
          * In {@code OPEN} state, all requests will be rejected until the next recovery time point.
+         * 在 open状态 所有的请求将会被拒绝 知道下一个恢复时间点
          */
         OPEN,
-        /**
+        /** 在半开状态 熔断器将允许尝试性调用
+         * 如果这次调用是不正常的 断路器 将会重新转换为OPEN装 并且等待下一个恢复的时间点
+         * 否则资源将会被视为恢复 并且断路器将终止切断请求 并恢复为CLOSED状态
          * In {@code HALF_OPEN} state, the circuit breaker will allow a "probe" invocation.
          * If the invocation is abnormal according to the strategy (e.g. it's slow), the circuit breaker
          * will re-transform to the {@code OPEN} state and wait for the next recovery time point;
@@ -73,6 +76,7 @@ public interface CircuitBreaker {
          */
         HALF_OPEN,
         /**
+         * 在关闭状态  所有请求会被允许 当当前指标超过阈值的时候 断路器会被打开
          * In {@code CLOSED} state, all requests are permitted. When current metric value exceeds the threshold,
          * the circuit breaker will transform to {@code OPEN} state.
          */

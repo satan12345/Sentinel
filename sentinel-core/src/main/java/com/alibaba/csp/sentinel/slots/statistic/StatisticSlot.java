@@ -55,10 +55,19 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
         try {
+            /**
+             * 调用slotChain中后续的所有Slot 完成所有规则检测
+             * 在其执行过程中 可能会抛出异常 例如 规则检测未通过 抛出 BlockException
+             */
             // Do some checking.
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
 
+            /**
+             * 代码能走到这里 说明前面所有规则检测全部通过 此时就可以将该请求的统计到相应的数据中
+             *
+             */
             // Request passed, add thread count and pass count.
+            //增加线程数与通过的请求数
             node.increaseThreadNum();
             node.addPassRequest(count);
 
@@ -94,10 +103,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (BlockException e) {
+            //限流了
             // Blocked, set block exception to current entry.
             context.getCurEntry().setBlockError(e);
 
-            // Add block count.
+            // Add block count. 添加被阻塞的qps 数
             node.increaseBlockQps(count);
             if (context.getCurEntry().getOriginNode() != null) {
                 context.getCurEntry().getOriginNode().increaseBlockQps(count);
@@ -112,7 +122,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             for (ProcessorSlotEntryCallback<DefaultNode> handler : StatisticSlotCallbackRegistry.getEntryCallbacks()) {
                 handler.onBlocked(e, context, resourceWrapper, node, count, args);
             }
-
+            //再次抛出
             throw e;
         } catch (Throwable e) {
             // Unexpected internal error, set error to current entry.

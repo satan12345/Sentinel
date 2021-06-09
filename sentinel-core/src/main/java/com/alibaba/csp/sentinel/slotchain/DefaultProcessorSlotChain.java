@@ -21,13 +21,21 @@ import com.alibaba.csp.sentinel.context.Context;
  * @author qinan.qn
  * @author jialiang.linjl
  */
+
+/**
+ * 单向链表  默认包含一个节点 且有两个节点 first end 指向这个节点
+ */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
+    /**
+     * 头节点
+     */
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
 
         @Override
         public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)
-            throws Throwable {
+                throws Throwable {
+            //调用下一个
             super.fireEntry(context, resourceWrapper, t, count, prioritized, args);
         }
 
@@ -71,7 +79,8 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)
-        throws Throwable {
+            throws Throwable {
+        //执行第一个节点的任务
         first.transformEntry(context, resourceWrapper, t, count, prioritized, args);
     }
 

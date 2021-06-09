@@ -49,7 +49,9 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  * @author Weihua
  */
 public class FlowRuleManager {
-
+    /**
+     * 流控规则 kery为资源名  value为资源流控规则集合
+     */
     private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<Map<String, List<FlowRule>>>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();

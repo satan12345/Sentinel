@@ -89,9 +89,11 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  */
 public class StatisticNode implements Node {
 
-    /**
+    /** 定义一个使用数组保存的数据的计量器
+     * 保存了最近时间间隔的统计数据
      * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.
+     *
      */
     private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
@@ -196,8 +198,13 @@ public class StatisticNode implements Node {
         return rollingCounterInMinute.exception();
     }
 
+    /**
+     * 获取通过的QPS
+     * @return
+     */
     @Override
     public double passQps() {
+        //当前时间窗通过的请求数/时间窗的长度  这两个数相除就是QPS
         return rollingCounterInSecond.pass() / rollingCounterInSecond.getWindowIntervalInSec();
     }
 
@@ -244,6 +251,7 @@ public class StatisticNode implements Node {
 
     @Override
     public void addPassRequest(int count) {
+        //为滑动计数器增加本次访问的数据
         rollingCounterInSecond.addPass(count);
         rollingCounterInMinute.addPass(count);
     }

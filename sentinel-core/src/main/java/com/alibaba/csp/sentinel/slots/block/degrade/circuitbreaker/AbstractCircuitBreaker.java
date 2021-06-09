@@ -33,10 +33,15 @@ import com.alibaba.csp.sentinel.util.function.BiConsumer;
 public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected final DegradeRule rule;
+    /**
+     * 熔断时长
+     */
     protected final int recoveryTimeoutMs;
 
     private final EventObserverRegistry observerRegistry;
-
+    /**
+     * 断路器状态
+     */
     protected final AtomicReference<State> currentState = new AtomicReference<>(State.CLOSED);
     protected volatile long nextRetryTimestamp;
 
@@ -68,10 +73,16 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
     public boolean tryPass(Context context) {
         // Template implementation.
         if (currentState.get() == State.CLOSED) {
+            //断路器是关闭状态 直接返回true 请求可以通过
             return true;
         }
         if (currentState.get() == State.OPEN) {
             // For half-open state we allow a request for probing.
+            /**
+             * 判断时间点是否达到下一次尝试的时间点
+             * 到了 则执行后面方法
+             * 没到 直接返回false 请求不允许通过
+             */
             return retryTimeoutArrived() && fromOpenToHalfOpen(context);
         }
         return false;
@@ -86,13 +97,24 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         return TimeUtil.currentTimeMillis() >= nextRetryTimestamp;
     }
 
+    /**
+     * 更新允许下一次尝试的时间戳
+     */
     protected void updateNextRetryTimestamp() {
         this.nextRetryTimestamp = TimeUtil.currentTimeMillis() + recoveryTimeoutMs;
     }
 
+    /**
+     * 从close--》open
+     * @param snapshotValue
+     * @return
+     */
     protected boolean fromCloseToOpen(double snapshotValue) {
         State prev = State.CLOSED;
+
         if (currentState.compareAndSet(prev, State.OPEN)) {
+            //将熔断器由关闭状态变为打开状态
+            //更新下一次尝试的时间戳
             updateNextRetryTimestamp();
 
             notifyObservers(prev, State.OPEN, snapshotValue);
@@ -101,8 +123,14 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         return false;
     }
 
+    /**
+     * 将断路器状态由打开状态变为半开状态 然后返回true 允许本次通过
+     * @param context
+     * @return
+     */
     protected boolean fromOpenToHalfOpen(Context context) {
         if (currentState.compareAndSet(State.OPEN, State.HALF_OPEN)) {
+            //由open状态 变为half_open
             notifyObservers(State.OPEN, State.HALF_OPEN, null);
             Entry entry = context.getCurEntry();
             entry.whenTerminate(new BiConsumer<Context, Entry>() {
@@ -131,6 +159,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     protected boolean fromHalfOpenToOpen(double snapshotValue) {
         if (currentState.compareAndSet(State.HALF_OPEN, State.OPEN)) {
+            //更新下一次重试的时间
             updateNextRetryTimestamp();
             notifyObservers(State.HALF_OPEN, State.OPEN, snapshotValue);
             return true;
@@ -147,6 +176,10 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
         return false;
     }
 
+    /**
+     * 修改断路器的状态为打开
+     * @param triggerValue
+     */
     protected void transformToOpen(double triggerValue) {
         State cs = currentState.get();
         switch (cs) {

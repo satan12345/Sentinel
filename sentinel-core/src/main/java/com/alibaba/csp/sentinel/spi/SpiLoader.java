@@ -77,7 +77,7 @@ public final class SpiLoader<S> {
 
     // Cache the SpiLoader instances, key: classname of Service, value: SpiLoader instance
     private static final ConcurrentHashMap<String, SpiLoader> SPI_LOADER_MAP = new ConcurrentHashMap<>();
-
+    //装载字符串加载后的class
     // Cache the classes of Provider
     private final List<Class<? extends S>> classList = Collections.synchronizedList(new ArrayList<Class<? extends S>>());
 
@@ -95,12 +95,14 @@ public final class SpiLoader<S> {
     private final ConcurrentHashMap<String, S> singletonMap = new ConcurrentHashMap<>();
 
     // Whether this SpiLoader has been loaded, that is, loaded the Provider configuration file
+    //是否已经加载过
     private final AtomicBoolean loaded = new AtomicBoolean(false);
 
     // Default provider class
     private Class<? extends S> defaultClass = null;
 
     // The Service class, must be interface or abstract class
+    //要实例化类的接口或者抽象类
     private Class<S> service;
 
     /**
@@ -115,7 +117,7 @@ public final class SpiLoader<S> {
         AssertUtil.notNull(service, "SPI class cannot be null");
         AssertUtil.isTrue(service.isInterface() || Modifier.isAbstract(service.getModifiers()),
                 "SPI class[" + service.getName() + "] must be interface or abstract class");
-
+        //com.alibaba.csp.sentinel.slotchain.SlotChainBuilder
         String className = service.getName();
         SpiLoader<T> spiLoader = SPI_LOADER_MAP.get(className);
         if (spiLoader == null) {
@@ -346,9 +348,22 @@ public final class SpiLoader<S> {
                 in = url.openStream();
                 br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
                 String line;
+                /**
+                 * # Sentinel default ProcessorSlots
+                 * com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot
+                 * com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot
+                 * com.alibaba.csp.sentinel.slots.logger.LogSlot
+                 * com.alibaba.csp.sentinel.slots.statistic.StatisticSlot
+                 * com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot
+                 * com.alibaba.csp.sentinel.slots.system.SystemSlot
+                 * com.alibaba.csp.sentinel.slots.block.flow.FlowSlot
+                 * com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot
+                 */
+                //获取每一行数据
                 while ((line = br.readLine()) != null) {
+
                     if (StringUtil.isBlank(line)) {
-                        // Skip blank line
+                        // Skip blank line 过滤空行
                         continue;
                     }
 
@@ -362,10 +377,12 @@ public final class SpiLoader<S> {
                     if (commentIndex > 0) {
                         line = line.substring(0, commentIndex);
                     }
+                    //获取全类名字符串
                     line = line.trim();
 
                     Class<S> clazz = null;
                     try {
+                        //转成class
                         clazz = (Class<S>) Class.forName(line, false, classLoader);
                     } catch (ClassNotFoundException e) {
                         fail("class " + line + " not found", e);
@@ -374,8 +391,9 @@ public final class SpiLoader<S> {
                     if (!service.isAssignableFrom(clazz)) {
                         fail("class " + clazz.getName() + "is not subtype of " + service.getName() + ",SPI configuration file=" + fullFileName);
                     }
-
+                    //添加到列表
                     classList.add(clazz);
+                    //获取class上的SPI注解
                     Spi spi = clazz.getAnnotation(Spi.class);
                     String aliasName = spi == null || "".equals(spi.value()) ? clazz.getName() : spi.value();
                     if (classMap.containsKey(aliasName)) {
@@ -389,6 +407,7 @@ public final class SpiLoader<S> {
                         if (defaultClass != null) {
                             fail("Found more than one default Provider, SPI configuration file=" + fullFileName);
                         }
+                        //是默认的class
                         defaultClass = clazz;
                     }
 
@@ -410,6 +429,7 @@ public final class SpiLoader<S> {
         Collections.sort(sortedClassList, new Comparator<Class<? extends S>>() {
             @Override
             public int compare(Class<? extends S> o1, Class<? extends S> o2) {
+                //进行排序
                 Spi spi1 = o1.getAnnotation(Spi.class);
                 int order1 = spi1 == null ? 0 : spi1.order();
 

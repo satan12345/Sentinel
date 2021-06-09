@@ -36,11 +36,16 @@ public final class SlotChainProvider {
      * @return new created slot chain
      */
     public static ProcessorSlotChain newSlotChain() {
+        /**
+         * build不为null则通过build创建slotChain
+         *
+         */
         if (slotChainBuilder != null) {
             return slotChainBuilder.build();
         }
-
+        //builder为null 则通过SPI方式创建一个Builder
         // Resolve the slot chain builder SPI.
+
         slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault();
 
         if (slotChainBuilder == null) {
