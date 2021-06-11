@@ -35,7 +35,7 @@ import com.alibaba.csp.sentinel.property.DynamicSentinelProperty;
 import com.alibaba.csp.sentinel.property.PropertyListener;
 import com.alibaba.csp.sentinel.property.SentinelProperty;
 
-/**
+/** 流控规则管理器
  * <p>
  * One resources can have multiple rules. And these rules take effects in the following order:
  * <ol>
@@ -50,9 +50,9 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public class FlowRuleManager {
     /**
-     * 流控规则 kery为资源名  value为资源流控规则集合
+     * 流控规则 key为资源名  value为资源流控规则集合
      */
-    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<Map<String, List<FlowRule>>>();
+    private static final AtomicReference<Map<String, List<FlowRule>>> flowRules = new AtomicReference<>();
 
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();

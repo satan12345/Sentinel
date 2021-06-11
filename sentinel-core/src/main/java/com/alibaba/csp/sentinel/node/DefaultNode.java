@@ -50,7 +50,7 @@ public class DefaultNode extends StatisticNode {
      */
     private volatile Set<Node> childList = new HashSet<>();
 
-    /**
+    /**集群节点
      * Associated cluster node.
      */
     private ClusterNode clusterNode;
@@ -126,7 +126,9 @@ public class DefaultNode extends StatisticNode {
 
     @Override
     public void increaseThreadNum() {
+        //当前节点的线程数增加
         super.increaseThreadNum();
+        //集群节点的线程数增加
         this.clusterNode.increaseThreadNum();
     }
 

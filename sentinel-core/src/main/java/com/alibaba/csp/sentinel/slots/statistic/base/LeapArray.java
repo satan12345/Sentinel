@@ -41,19 +41,19 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
  */
 public abstract class LeapArray<T> {
     /**
-     * 样本窗口长度
+     * 样本窗口长度 500ms
      */
     protected int windowLengthInMs;
     /**
-     * 样本数
+     * 样本数 默认值2
      */
     protected int sampleCount;
     /**
-     * 时间窗的长度 ms
+     * 间隔 时间窗的长度 ms 默认 1000ms
      */
     protected int intervalInMs;
     /**
-     * 时间窗的长度 s
+     * 间隔 时间窗的长度 s 默认 1S
      */
     private double intervalInSecond;
     /**
@@ -77,12 +77,15 @@ public abstract class LeapArray<T> {
         AssertUtil.isTrue(sampleCount > 0, "bucket count is invalid: " + sampleCount);
         AssertUtil.isTrue(intervalInMs > 0, "total time interval of the sliding window should be positive");
         AssertUtil.isTrue(intervalInMs % sampleCount == 0, "time span needs to be evenly divided");
-
+        //时间窗长度=1000/2
         this.windowLengthInMs = intervalInMs / sampleCount;
+        //1000
         this.intervalInMs = intervalInMs;
+        //1
         this.intervalInSecond = intervalInMs / 1000.0;
+        //样本数
         this.sampleCount = sampleCount;
-
+        //样本时间窗的数组
         this.array = new AtomicReferenceArray<>(sampleCount);
     }
 
@@ -115,6 +118,9 @@ public abstract class LeapArray<T> {
 
     private int calculateTimeIdx(/*@Valid*/ long timeMillis) {
         /**
+         * 用当前的时间戳除以每个样本时间窗的大小
+         * 得到 可以分为多少个样本时间窗的个数
+         * 再用个数模已数组的大小 确定数据放在数组那个时间窗 有点类似hash确定槽位
          * 计算索引 取模 确定数组下标
          * 当前时间 比如5 时间窗口比如3
          * 5/3=1
@@ -173,7 +179,7 @@ public abstract class LeapArray<T> {
                  * then try to update circular array via a CAS operation. Only one thread can
                  * succeed to update, while other threads yield its time slice.
                  */
-                //创建样本时间窗
+                //创建样本时间窗 并设置到数组中
                 WindowWrap<T> window = new WindowWrap<T>(windowLengthInMs, windowStart, newEmptyBucket(timeMillis));
                 if (array.compareAndSet(idx, null, window)) {
                     // Successfully updated, return the created bucket.

@@ -54,25 +54,36 @@ import com.alibaba.csp.sentinel.context.Context;
 public abstract class Entry implements AutoCloseable {
 
     private static final Object[] OBJECTS0 = new Object[0];
-
+    /**
+     * 节点创建时间
+     */
     private final long createTimestamp;
+    /**
+     * 记录请求完成的时间戳
+     */
     private long completeTimestamp;
-
+    /**
+     * 当前节点
+     */
     private Node curNode;
     /**
      * {@link Node} of the specific origin, Usually the origin is the Service Consumer.
      */
     private Node originNode;
     /**
-     * 存放异常
+     * 存放错误
      */
     private Throwable error;
+    /**
+     * 记录block异常
+     */
     private BlockException blockError;
 
     protected final ResourceWrapper resourceWrapper;
 
     public Entry(ResourceWrapper resourceWrapper) {
         this.resourceWrapper = resourceWrapper;
+        //实例化时记录节点创建时间
         this.createTimestamp = TimeUtil.currentTimeMillis();
     }
 

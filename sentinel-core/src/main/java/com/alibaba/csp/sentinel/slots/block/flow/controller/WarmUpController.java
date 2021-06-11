@@ -60,6 +60,8 @@ import com.alibaba.csp.sentinel.slots.block.flow.TrafficShapingController;
  * </p>
  *
  * @author jialiang.linjl
+ *
+ * 令牌桶算法
  */
 public class WarmUpController implements TrafficShapingController {
 

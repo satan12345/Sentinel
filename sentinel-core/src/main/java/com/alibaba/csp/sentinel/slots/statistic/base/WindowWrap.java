@@ -48,8 +48,11 @@ public class WindowWrap<T> {
      * @param value            statistic data
      */
     public WindowWrap(long windowLengthInMs, long windowStart, T value) {
+        //设置样本时间窗的长度
         this.windowLengthInMs = windowLengthInMs;
+        //样本时间窗的开始时间
         this.windowStart = windowStart;
+        //设置样本时间窗的统计数据对象
         this.value = value;
     }
 

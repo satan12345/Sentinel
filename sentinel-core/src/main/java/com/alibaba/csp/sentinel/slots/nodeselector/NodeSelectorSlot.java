@@ -127,7 +127,7 @@ import java.util.Map;
 @Spi(isSingleton = false, order = Constants.ORDER_NODE_SELECTOR_SLOT)
 public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
-    /**
+    /**缓存contextName 与DefaultNode
      * {@link DefaultNode}s of the same resource in different context.
      */
     private volatile Map<String, DefaultNode> map = new HashMap<String, DefaultNode>(10);
@@ -164,13 +164,14 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
                 if (node == null) {
                     //创建一个DefaultNode  并添加到缓存
                     node = new DefaultNode(resourceWrapper, null);
-                    //COW
+                    //缓存  防止迭代问题
                     HashMap<String, DefaultNode> cacheMap = new HashMap<String, DefaultNode>(map.size());
                     cacheMap.putAll(map);
                     cacheMap.put(context.getName(), node);
                     map = cacheMap;
+
                     // Build invocation tree
-                    //将新建的Node 添加到调用树中
+                    //将新建的Node 添加到调用树中 将node添加到Context的entranceNode的childList的集合中国
                     ((DefaultNode) context.getLastNode()).addChild(node);
                 }
 

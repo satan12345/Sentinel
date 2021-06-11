@@ -107,6 +107,7 @@ public class MetricBucket {
     }
 
     public void addPass(int n) {
+        //修改PASS指标的值
         add(MetricEvent.PASS, n);
     }
 

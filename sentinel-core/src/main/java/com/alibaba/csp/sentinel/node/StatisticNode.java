@@ -104,7 +104,7 @@ public class StatisticNode implements Node {
      */
     private transient Metric rollingCounterInMinute = new ArrayMetric(60, 60 * 1000, false);
 
-    /**
+    /** 线程数
      * The counter for thread count.
      */
     private LongAdder curThreadNum = new LongAdder();
@@ -258,7 +258,9 @@ public class StatisticNode implements Node {
 
     @Override
     public void addRtAndSuccess(long rt, int successCount) {
+        //添加成功格式
         rollingCounterInSecond.addSuccess(successCount);
+        //添加响应时间
         rollingCounterInSecond.addRT(rt);
 
         rollingCounterInMinute.addSuccess(successCount);

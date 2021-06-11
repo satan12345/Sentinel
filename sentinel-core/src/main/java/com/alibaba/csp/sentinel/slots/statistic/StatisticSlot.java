@@ -67,8 +67,10 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
              *
              */
             // Request passed, add thread count and pass count.
+//            DefaultNode
             //增加线程数与通过的请求数
             node.increaseThreadNum();
+
             node.addPassRequest(count);
 
             if (context.getCurEntry().getOriginNode() != null) {
@@ -103,7 +105,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (BlockException e) {
-            //限流了
+            //限流了 记录blockError
             // Blocked, set block exception to current entry.
             context.getCurEntry().setBlockError(e);
 
@@ -126,6 +128,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             throw e;
         } catch (Throwable e) {
             // Unexpected internal error, set error to current entry.
+            //记录未知错误
             context.getCurEntry().setError(e);
 
             throw e;
@@ -137,15 +140,20 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         Node node = context.getCurNode();
 
         if (context.getCurEntry().getBlockError() == null) {
+            //没有限流的异常的情况下
             // Calculate response time (use completeStatTime as the time of completion).
+            //记录本次请求完成的时间戳
             long completeStatTime = TimeUtil.currentTimeMillis();
             context.getCurEntry().setCompleteTimestamp(completeStatTime);
+            //计算本次请求的响应时间
             long rt = completeStatTime - context.getCurEntry().getCreateTimestamp();
-
+            //获取本次请求的错误
             Throwable error = context.getCurEntry().getError();
 
             // Record response time and success count.
+            //记录响应时长与成功次数
             recordCompleteFor(node, count, rt, error);
+
             recordCompleteFor(context.getCurEntry().getOriginNode(), count, rt, error);
             if (resourceWrapper.getEntryType() == EntryType.IN) {
                 recordCompleteFor(Constants.ENTRY_NODE, count, rt, error);
@@ -157,7 +165,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         for (ProcessorSlotExitCallback handler : exitCallbacks) {
             handler.onExit(context, resourceWrapper, count, args);
         }
-
+        //执行下一个调用链
         fireExit(context, resourceWrapper, count);
     }
 
@@ -165,7 +173,9 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         if (node == null) {
             return;
         }
+
         node.addRtAndSuccess(rt, batchCount);
+
         node.decreaseThreadNum();
 
         if (error != null && !(error instanceof BlockException)) {

@@ -258,6 +258,7 @@ public class ArrayMetric implements Metric {
     @Override
     public void addRT(long rt) {
         WindowWrap<MetricBucket> wrap = data.currentWindow();
+
         wrap.value().addRT(rt);
     }
 
