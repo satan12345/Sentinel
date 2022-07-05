@@ -39,6 +39,12 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
     public void sentinelResourceAnnotationPointcut() {
     }
 
+  /**
+   * 就是一个环绕通知
+   * @param pjp
+   * @return
+   * @throws Throwable
+   */
     @Around("sentinelResourceAnnotationPointcut()")
     public Object invokeResourceWithSentinel(ProceedingJoinPoint pjp) throws Throwable {
         Method originMethod = resolveMethod(pjp);
@@ -48,12 +54,17 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
+        //资源名称
         String resourceName = getResourceName(annotation.value(), originMethod);
+        //EntryType.OUT
         EntryType entryType = annotation.entryType();
+        //默认值为0
         int resourceType = annotation.resourceType();
         Entry entry = null;
         try {
+            //限流逻辑
             entry = SphU.entry(resourceName, resourceType, entryType, pjp.getArgs());
+            //业务逻辑
             return pjp.proceed();
         } catch (BlockException ex) {
             return handleBlockException(pjp, annotation, ex);

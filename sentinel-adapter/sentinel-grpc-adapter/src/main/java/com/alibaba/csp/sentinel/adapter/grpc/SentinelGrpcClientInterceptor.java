@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * </pre>
  * <p>
  * For server interceptor, see {@link SentinelGrpcServerInterceptor}.
- *
+ *mvn protobuf:compile
  * @author Eric Zhao
  */
 public class SentinelGrpcClientInterceptor implements ClientInterceptor {

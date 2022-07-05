@@ -22,14 +22,25 @@ public enum MetricEvent {
 
     /**
      * Normal pass.
+     * 正常的通过数 没有被限流的数量
      */
     PASS,
     /**
      * Normal block.
+     * 被限流的数据
      */
     BLOCK,
+    /**
+     * 发生异常的次数
+     */
     EXCEPTION,
+    /**
+     * 调用的请求数据
+     */
     SUCCESS,
+    /**
+     * 总的响应时间
+     */
     RT,
 
     /**

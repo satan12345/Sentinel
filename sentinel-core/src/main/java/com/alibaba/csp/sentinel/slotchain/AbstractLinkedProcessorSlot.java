@@ -29,6 +29,11 @@ public abstract class AbstractLinkedProcessorSlot<T> implements ProcessorSlot<T>
     public void fireEntry(Context context, ResourceWrapper resourceWrapper, Object obj, int count, boolean prioritized, Object... args)
         throws Throwable {
         if (next != null) {
+            /**
+             * 执行下一个节点的transformEntry
+             * 而执行下一个节点的transformEntry 这个方法里面调用的是
+             * entry抽象方法则是由具体的子类实现的
+             */
             next.transformEntry(context, resourceWrapper, obj, count, prioritized, args);
         }
     }

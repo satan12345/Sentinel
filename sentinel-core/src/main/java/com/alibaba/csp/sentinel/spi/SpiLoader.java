@@ -226,14 +226,15 @@ public final class SpiLoader<S> {
      * @return Provider instance
      */
     public S loadFirstInstanceOrDefault() {
+        //加载相应的Class
         load();
-
         for (Class<? extends S> clazz : classList) {
             if (defaultClass == null || clazz != defaultClass) {
+                //实例化
                 return createInstance(clazz);
             }
         }
-
+        //获取默认的实例
         return loadDefaultInstance();
     }
 

@@ -34,9 +34,9 @@ import com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import com.alibaba.csp.sentinel.util.function.Function;
 
-/**
+
+/** 流控规则检测类
  * Rule checker for flow control rules.
- *
  * @author Eric Zhao
  */
 public class FlowRuleChecker {
@@ -46,10 +46,14 @@ public class FlowRuleChecker {
         if (ruleProvider == null || resource == null) {
             return;
         }
+        //获取指定资源的具体流控规则集合
         Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
-                if (!canPassCheck(rule, context, node, count, prioritized)) {
+                //流控规则遍历
+                boolean passFlag = canPassCheck(rule, context, node, count, prioritized);
+                if (!passFlag) {
+                    //没有通过 则抛出流控异常
                     throw new FlowException(rule.getLimitApp(), rule);
                 }
             }
@@ -71,7 +75,7 @@ public class FlowRuleChecker {
         if (rule.isClusterMode()) {
             return passClusterCheck(rule, context, node, acquireCount, prioritized);
         }
-
+        //检测
         return passLocalCheck(rule, context, node, acquireCount, prioritized);
     }
 
@@ -81,8 +85,10 @@ public class FlowRuleChecker {
         if (selectedNode == null) {
             return true;
         }
+        //获取流控规则对应的流控效果的处理类
+        TrafficShapingController rater = rule.getRater();
 
-        return rule.getRater().canPass(selectedNode, acquireCount, prioritized);
+        return rater.canPass(selectedNode, acquireCount, prioritized);
     }
 
     static Node selectReferenceNode(FlowRule rule, Context context, DefaultNode node) {

@@ -26,12 +26,17 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Eric Zhao
  */
 public class MetricBucket {
-
+    //统计数组
     private final LongAdder[] counters;
 
     private volatile long minRt;
 
     public MetricBucket() {
+        /**
+         * 这里将需要统计的数据封装为枚举 然后枚举转为数组
+         * 再获取各个枚举值的下标位作为索引位
+         * 最后初始化数组的各个索引位
+         */
         MetricEvent[] events = MetricEvent.values();
         this.counters = new LongAdder[events.length];
         for (MetricEvent event : events) {
@@ -41,7 +46,9 @@ public class MetricBucket {
     }
 
     public MetricBucket reset(MetricBucket bucket) {
+
         for (MetricEvent event : MetricEvent.values()) {
+            //对应索引位的值进行重置
             counters[event.ordinal()].reset();
             counters[event.ordinal()].add(bucket.get(event));
         }
@@ -50,6 +57,7 @@ public class MetricBucket {
     }
 
     private void initMinRt() {
+        //重置minRt
         this.minRt = SentinelConfig.statisticMaxRt();
     }
 
@@ -59,9 +67,11 @@ public class MetricBucket {
      * @return new metric bucket in initial state
      */
     public MetricBucket reset() {
+        //重置统计位数据
         for (MetricEvent event : MetricEvent.values()) {
             counters[event.ordinal()].reset();
         }
+        //
         initMinRt();
         return this;
     }
@@ -104,6 +114,10 @@ public class MetricBucket {
     }
 
     public void addPass(int n) {
+        /**
+         *   传递统计指标枚举字段 该枚举字段用于获取得到索引下标值
+         *   再将该下标值作为统计数组的下标值获得对应的统计元素
+         */
         add(MetricEvent.PASS, n);
     }
 
@@ -116,6 +130,7 @@ public class MetricBucket {
     }
 
     public void addBlock(int n) {
+        //增加限流的统计数
         add(MetricEvent.BLOCK, n);
     }
 

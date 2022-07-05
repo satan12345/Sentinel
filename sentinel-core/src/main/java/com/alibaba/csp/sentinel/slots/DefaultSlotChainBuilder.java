@@ -35,17 +35,32 @@ import java.util.List;
 @Spi(isDefault = true)
 public class DefaultSlotChainBuilder implements SlotChainBuilder {
 
+    /**
+     * # Sentinel default ProcessorSlots
+     * com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot
+     * com.alibaba.csp.sentinel.slots.clusterbuilder.ClusterBuilderSlot
+     * com.alibaba.csp.sentinel.slots.logger.LogSlot
+     * com.alibaba.csp.sentinel.slots.statistic.StatisticSlot
+     * com.alibaba.csp.sentinel.slots.block.authority.AuthoritySlot
+     * com.alibaba.csp.sentinel.slots.system.SystemSlot
+     * com.alibaba.csp.sentinel.slots.block.flow.FlowSlot
+     * com.alibaba.csp.sentinel.slots.block.degrade.DegradeSlot
+     * @return
+     */
     @Override
     public ProcessorSlotChain build() {
         ProcessorSlotChain chain = new DefaultProcessorSlotChain();
-
-        List<ProcessorSlot> sortedSlotList = SpiLoader.of(ProcessorSlot.class).loadInstanceListSorted();
+        //获取SPI加载器
+        SpiLoader<ProcessorSlot> spiLoader = SpiLoader.of(ProcessorSlot.class);
+        //加载指定Slot并排序
+        List<ProcessorSlot> sortedSlotList = spiLoader.loadInstanceListSorted();
         for (ProcessorSlot slot : sortedSlotList) {
+
             if (!(slot instanceof AbstractLinkedProcessorSlot)) {
                 RecordLog.warn("The ProcessorSlot(" + slot.getClass().getCanonicalName() + ") is not an instance of AbstractLinkedProcessorSlot, can't be added into ProcessorSlotChain");
                 continue;
             }
-
+            //执行链中加载相应的Slot
             chain.addLast((AbstractLinkedProcessorSlot<?>) slot);
         }
 

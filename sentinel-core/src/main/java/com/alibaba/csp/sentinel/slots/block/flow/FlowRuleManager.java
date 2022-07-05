@@ -48,8 +48,11 @@ import com.alibaba.csp.sentinel.property.SentinelProperty;
  */
 public class FlowRuleManager {
 
+    /**
+     * 存储流控规则的Map : 资源名-->流控规则集合
+     */
     private static volatile Map<String, List<FlowRule>> flowRules = new HashMap<>();
-
+    //流控属性监听器
     private static final FlowPropertyListener LISTENER = new FlowPropertyListener();
     private static SentinelProperty<List<FlowRule>> currentProperty = new DynamicSentinelProperty<List<FlowRule>>();
 
@@ -58,6 +61,7 @@ public class FlowRuleManager {
         new NamedThreadFactory("sentinel-metrics-record-task", true));
 
     static {
+        //增加监听器
         currentProperty.addListener(LISTENER);
         startMetricTimerListener();
     }
@@ -146,6 +150,9 @@ public class FlowRuleManager {
         return true;
     }
 
+    /**
+     * 流控属性监听器
+     */
     private static final class FlowPropertyListener implements PropertyListener<List<FlowRule>> {
 
         @Override

@@ -37,6 +37,7 @@ public class FlowRule extends AbstractRule {
 
     public FlowRule() {
         super();
+        //设置针对来源的默认参数default
         setLimitApp(RuleConstant.LIMIT_APP_DEFAULT);
     }
 
@@ -48,15 +49,20 @@ public class FlowRule extends AbstractRule {
 
     /**
      * The threshold type of flow control (0: thread count, 1: QPS).
+     * 阈值类型   默认值1 即线程数
+     * 0 表示线程数
+     * 1 表示QPS
      */
     private int grade = RuleConstant.FLOW_GRADE_QPS;
 
     /**
      * Flow control threshold count.
+     * 阈值数： 即上面阈值类型限制的数量
      */
     private double count;
 
     /**
+     * 流控模式
      * Flow control strategy based on invocation chain.
      *
      * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);
@@ -67,6 +73,7 @@ public class FlowRule extends AbstractRule {
 
     /**
      * Reference resource in flow control with relevant resource or context.
+     * 关联资源
      */
     private String refResource;
 
@@ -75,7 +82,9 @@ public class FlowRule extends AbstractRule {
      * 0. default(reject directly), 1. warm up, 2. rate limiter, 3. warm up + rate limiter
      */
     private int controlBehavior = RuleConstant.CONTROL_BEHAVIOR_DEFAULT;
-
+    /**
+     * 预热市场
+     */
     private int warmUpPeriodSec = 10;
 
     /**
@@ -91,6 +100,10 @@ public class FlowRule extends AbstractRule {
 
     /**
      * The traffic shaping (throttling) controller.
+     * 流控效果对应的处理类
+     * 快速失败：DefaultController
+     * Warm Up:WarmUpController
+     * 排队等待：RateLimiterController
      */
     private TrafficShapingController controller;
 

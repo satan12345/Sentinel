@@ -42,6 +42,9 @@ import com.alibaba.csp.sentinel.util.StringUtil;
  */
 public final class DegradeRuleManager {
 
+    /**
+     * 存储资源降级数据的map  资源名 --->降级规则列表
+     */
     private static volatile Map<String, List<CircuitBreaker>> circuitBreakers = new HashMap<>();
     private static volatile Map<String, Set<DegradeRule>> ruleMap = new HashMap<>();
 

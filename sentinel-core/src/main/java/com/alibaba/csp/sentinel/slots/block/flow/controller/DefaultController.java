@@ -31,8 +31,16 @@ import com.alibaba.csp.sentinel.util.TimeUtil;
 public class DefaultController implements TrafficShapingController {
 
     private static final int DEFAULT_AVG_USED_TOKENS = 0;
-
+    /**
+     * 阈值设置的值
+     */
     private double count;
+    /**
+     * The threshold type of flow control (0: thread count, 1: QPS).
+     * 阈值类型   默认值1 即线程数
+     * 0 表示线程数
+     * 1 表示QPS
+     */
     private int grade;
 
     public DefaultController(double count, int grade) {
@@ -45,10 +53,20 @@ public class DefaultController implements TrafficShapingController {
         return canPass(node, acquireCount, false);
     }
 
+    /**
+     * 检测是否可以通过
+     * @param node resource node
+     * @param acquireCount count to acquire
+     * @param prioritized whether the request is prioritized
+     * @return
+     */
     @Override
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
+        //计算现在的统计数据
         int curCount = avgUsedTokens(node);
+            //判断是否超过限制
         if (curCount + acquireCount > count) {
+            //prioritized  默认为false
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
                 long currentTime;
                 long waitInMs;
@@ -65,6 +83,7 @@ public class DefaultController implements TrafficShapingController {
             }
             return false;
         }
+        //没有超过限制直接返回验证通过
         return true;
     }
 
@@ -72,6 +91,10 @@ public class DefaultController implements TrafficShapingController {
         if (node == null) {
             return DEFAULT_AVG_USED_TOKENS;
         }
+        /**
+         * 根据流控的阈值类型 是QPS 还是线程数
+         * 获取相应的值
+         */
         return grade == RuleConstant.FLOW_GRADE_THREAD ? node.curThreadNum() : (int)(node.passQps());
     }
 

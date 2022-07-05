@@ -27,7 +27,7 @@ import com.alibaba.csp.sentinel.slots.statistic.base.WindowWrap;
 import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLeapArray;
 import com.alibaba.csp.sentinel.util.function.Predicate;
 
-/**
+/** 统计类
  * The basic metric class in Sentinel using a {@link BucketLeapArray} internal.
  *
  * @author jialiang.linjl
@@ -35,6 +35,7 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  */
 public class ArrayMetric implements Metric {
 
+    //OccupiableBucketLeapArray
     private final LeapArray<MetricBucket> data;
 
     public ArrayMetric(int sampleCount, int intervalInMs) {
@@ -218,6 +219,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void addBlock(int count) {
+        //获取当前的时间窗口
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().addBlock(count);
     }
@@ -241,6 +243,7 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void addPass(int count) {
+        //获取当前时间窗口
         WindowWrap<MetricBucket> wrap = data.currentWindow();
         wrap.value().addPass(count);
     }

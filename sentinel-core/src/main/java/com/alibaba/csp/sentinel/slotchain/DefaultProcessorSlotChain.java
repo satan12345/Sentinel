@@ -22,7 +22,7 @@ import com.alibaba.csp.sentinel.context.Context;
  * @author jialiang.linjl
  */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
-
+    //创建一个链条的头结点
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
 
         @Override
@@ -37,20 +37,37 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
         }
 
     };
+    //尾结点
     AbstractLinkedProcessorSlot<?> end = first;
 
     @Override
     public void addFirst(AbstractLinkedProcessorSlot<?> protocolProcessor) {
+        /**
+         * 这里先获取头结点的下一个节点作为新增加节点的下一个节点
+         * 将头结点的下一个节点指向新增的节点
+         * 虽然方法名显示的是增加头节点，但是其实是增加到二个位置,头结点作为一个虚拟节点
+         * 一直在这里
+         */
         protocolProcessor.setNext(first.getNext());
+
         first.setNext(protocolProcessor);
         if (end == first) {
             end = protocolProcessor;
         }
     }
 
+    /**
+     * 向链条的尾结点添加原始
+     * @param protocolProcessor processor to be added.
+     */
     @Override
     public void addLast(AbstractLinkedProcessorSlot<?> protocolProcessor) {
+        /**
+         * 原来尾结点的下一个节点指向新增的节点
+         * 即将新增的节点设置为尾结点
+         */
         end.setNext(protocolProcessor);
+        //尾结点参数指向新增的节点
         end = protocolProcessor;
     }
 
@@ -72,6 +89,7 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)
         throws Throwable {
+
         first.transformEntry(context, resourceWrapper, t, count, prioritized, args);
     }
 

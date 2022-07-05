@@ -27,9 +27,15 @@ import com.alibaba.csp.sentinel.util.AssertUtil;
  */
 public abstract class ResourceWrapper {
 
+    /**
+     * 资源名
+     */
     protected final String name;
 
     protected final EntryType entryType;
+    /**
+     * 资源类型
+     */
     protected final int resourceType;
 
     public ResourceWrapper(String name, EntryType entryType, int resourceType) {

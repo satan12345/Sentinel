@@ -245,9 +245,11 @@ public final class SentinelConfig {
      * @since 1.4.1
      */
     public static int statisticMaxRt() {
+        //从配置中获取最大响应时间
         String v = props.get(STATISTIC_MAX_RT);
         try {
             if (StringUtil.isEmpty(v)) {
+                //没有设置 返回默认的最大响应时间5S`
                 return DEFAULT_STATISTIC_MAX_RT;
             }
             return Integer.parseInt(v);

@@ -134,7 +134,7 @@ import java.util.Map;
  * fixed rate until all the requests have been processed or time out.
  * </p>
  * </ol>
- *
+ *流控的Slot
  * @author jialiang.linjl
  * @author Eric Zhao
  */
@@ -161,13 +161,15 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
+        //处理自己限流逻辑
         checkFlow(resourceWrapper, context, node, count, prioritized);
-
+        //执行下一个slot
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
     void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
         throws BlockException {
+        //流控检测
         checker.checkFlow(ruleProvider, resource, context, node, count, prioritized);
     }
 
@@ -176,11 +178,15 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireExit(context, resourceWrapper, count, args);
     }
 
+    /**
+     * 流控规则获取器 用于check的时候获取流控规则
+     */
     private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
         @Override
         public Collection<FlowRule> apply(String resource) {
             // Flow rule map should not be null.
             Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
+            //获取指定资源的流控规则
             return flowRules.get(resource);
         }
     };

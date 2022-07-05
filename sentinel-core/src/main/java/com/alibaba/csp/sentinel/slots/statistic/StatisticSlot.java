@@ -44,7 +44,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  * <li>Finally, the sum statistics of all entrances.</li>
  * </ul>
  * </p>
- *
+ *统计的Slot
  * @author jialiang.linjl
  * @author Eric Zhao
  */
@@ -59,7 +59,9 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
 
             // Request passed, add thread count and pass count.
+            // 增加线程数
             node.increaseThreadNum();
+            //增加通过的请求数 count为1
             node.addPassRequest(count);
 
             if (context.getCurEntry().getOriginNode() != null) {
@@ -94,10 +96,12 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (BlockException e) {
+            //阻塞
             // Blocked, set block exception to current entry.
             context.getCurEntry().setBlockError(e);
 
             // Add block count.
+            //增加阻塞的数量
             node.increaseBlockQps(count);
             if (context.getCurEntry().getOriginNode() != null) {
                 context.getCurEntry().getOriginNode().increaseBlockQps(count);

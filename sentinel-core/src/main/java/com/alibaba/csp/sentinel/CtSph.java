@@ -44,7 +44,7 @@ public class CtSph implements Sph {
 
     private static final Object[] OBJECTS0 = new Object[0];
 
-    /**
+    /** 指定资源的执行链map
      * Same resource({@link ResourceWrapper#equals(Object)}) will share the same
      * {@link ProcessorSlotChain}, no matter in which {@link Context}.
      */
@@ -132,7 +132,7 @@ public class CtSph implements Sph {
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }
-
+        //寻找指定资源的执行链
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -142,9 +142,10 @@ public class CtSph implements Sph {
         if (chain == null) {
             return new CtEntry(resourceWrapper, null, context);
         }
-
+        //再次封装
         Entry e = new CtEntry(resourceWrapper, chain, context);
         try {
+          //执行链执行
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
             e.exit(count, args);
@@ -192,6 +193,7 @@ public class CtSph implements Sph {
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+        //或者资源的处理类
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
@@ -199,13 +201,16 @@ public class CtSph implements Sph {
                 if (chain == null) {
                     // Entry size limit.
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
+
                         return null;
                     }
-
+                    //初始化一个Chain
                     chain = SlotChainProvider.newSlotChain();
+                    //新创建一个map并把原来的map数据放入
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);
                     newMap.putAll(chainMap);
+                    //保存资源-->与处理链的映射关系
                     newMap.put(resourceWrapper, chain);
                     chainMap = newMap;
                 }
@@ -343,6 +348,7 @@ public class CtSph implements Sph {
     @Override
     public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized,
                                Object[] args) throws BlockException {
+        //对资源进行保证
         StringResourceWrapper resource = new StringResourceWrapper(name, entryType, resourceType);
         return entryWithPriority(resource, count, prioritized, args);
     }

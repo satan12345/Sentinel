@@ -89,14 +89,16 @@ import com.alibaba.csp.sentinel.util.function.Predicate;
  */
 public class StatisticNode implements Node {
 
-    /**
+    /** 按秒统计的滚动计数器
      * Holds statistics of the recent {@code INTERVAL} milliseconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.
      */
-    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
+    private transient volatile Metric rollingCounterInSecond =
+        //样本数为2 时间间隔为1000
+        new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
-    /**
+    /**按照分钟统计的滚动计数器
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
      */
@@ -104,6 +106,7 @@ public class StatisticNode implements Node {
 
     /**
      * The counter for thread count.
+     * 当前线程数
      */
     private LongAdder curThreadNum = new LongAdder();
 
@@ -198,6 +201,9 @@ public class StatisticNode implements Node {
 
     @Override
     public double passQps() {
+        /**
+         * 从复合统计指标中获取通过的请求数/时间窗口=每秒通过的请求数
+         */
         return rollingCounterInSecond.pass() / rollingCounterInSecond.getWindowIntervalInSec();
     }
 
@@ -269,6 +275,9 @@ public class StatisticNode implements Node {
         rollingCounterInMinute.addException(count);
     }
 
+    /**
+     * 增加线程数
+     */
     @Override
     public void increaseThreadNum() {
         curThreadNum.increment();

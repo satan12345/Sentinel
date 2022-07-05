@@ -75,6 +75,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public FilterRegistrationBean sentinelFilterRegistration() {
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
+        //注册Filter
         registration.setFilter(new CommonFilter());
         registration.addUrlPatterns("/*");
         registration.setName("sentinelFilter");

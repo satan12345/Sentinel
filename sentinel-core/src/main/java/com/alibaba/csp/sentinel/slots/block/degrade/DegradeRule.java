@@ -55,17 +55,23 @@ public class DegradeRule extends AbstractRule {
 
     /**
      * Circuit breaking strategy (0: average RT, 1: exception ratio, 2: exception count).
+     * 降级策略：
+     *  0 响应时间
+     *  1 异常比例
+     *  2 异常数
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
 
     /**
      * Threshold count.
+     *阈值数
      */
     private double count;
 
     /**
      * Recovery timeout (in seconds) when circuit breaker opens. After the timeout, the circuit breaker will
      * transform to half-open state for trying a few requests.
+     * 时间窗口：即降级后多久不能使用
      */
     private int timeWindow;
 
