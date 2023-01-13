@@ -30,6 +30,7 @@ public final class SlotChainProvider {
     private static volatile SlotChainBuilder slotChainBuilder = null;
 
     /**
+     * 构造责任链用于处理对应的资源
      * The load and pick process is not thread-safe, but it's okay since the method should be only invoked
      * via {@code lookProcessChain} in {@link com.alibaba.csp.sentinel.CtSph} under lock.
      *
@@ -40,12 +41,14 @@ public final class SlotChainProvider {
             return slotChainBuilder.build();
         }
         //SPI机制获取 第一个或者默认的实例 DefaultSlotChainBuilder
+        // 责任链的构建起
         // Resolve the slot chain builder SPI.
         slotChainBuilder = SpiLoader.of(SlotChainBuilder.class).loadFirstInstanceOrDefault();
 
         if (slotChainBuilder == null) {
             // Should not go through here.
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
+            //没有自定义责任链的构建器 则使用默认的责任链构建器
             slotChainBuilder = new DefaultSlotChainBuilder();
         } else {
             RecordLog.info("[SlotChainProvider] Global slot chain builder resolved: {}",

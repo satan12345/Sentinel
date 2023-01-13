@@ -37,6 +37,9 @@ public final class Constants {
     public final static int MAX_SLOT_CHAIN_SIZE = 6000;
 
     public final static String ROOT_ID = "machine-root";
+    /**
+     * 上下文默认的名称
+     */
     public final static String CONTEXT_DEFAULT_NAME = "sentinel_default_context";
 
     /**

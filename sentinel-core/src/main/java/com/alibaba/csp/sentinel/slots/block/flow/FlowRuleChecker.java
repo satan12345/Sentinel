@@ -41,6 +41,16 @@ import com.alibaba.csp.sentinel.util.function.Function;
  */
 public class FlowRuleChecker {
 
+    /**
+     * 流控
+     * @param ruleProvider
+     * @param resource
+     * @param context
+     * @param node
+     * @param count
+     * @param prioritized
+     * @throws BlockException
+     */
     public void checkFlow(Function<String, Collection<FlowRule>> ruleProvider, ResourceWrapper resource,
                           Context context, DefaultNode node, int count, boolean prioritized) throws BlockException {
         if (ruleProvider == null || resource == null) {
@@ -50,9 +60,10 @@ public class FlowRuleChecker {
         Collection<FlowRule> rules = ruleProvider.apply(resource.getName());
         if (rules != null) {
             for (FlowRule rule : rules) {
-                //流控规则遍历
+                //流控规则遍历 通过规则返回true 没有通过规则返回false
                 boolean passFlag = canPassCheck(rule, context, node, count, prioritized);
                 if (!passFlag) {
+                    // 没有通过限流的规则 返回false 取反为 TRUE  进入if 语句 抛出异常
                     //没有通过 则抛出流控异常
                     throw new FlowException(rule.getLimitApp(), rule);
                 }
@@ -65,6 +76,15 @@ public class FlowRuleChecker {
         return canPassCheck(rule, context, node, acquireCount, false);
     }
 
+    /**
+     * 流控规则检查
+     * @param rule
+     * @param context
+     * @param node
+     * @param acquireCount
+     * @param prioritized
+     * @return
+     */
     public boolean canPassCheck(/*@NonNull*/ FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                                     boolean prioritized) {
         String limitApp = rule.getLimitApp();
@@ -73,12 +93,22 @@ public class FlowRuleChecker {
         }
 
         if (rule.isClusterMode()) {
+            //集群检测
             return passClusterCheck(rule, context, node, acquireCount, prioritized);
         }
-        //检测
+        //本地单机检测
         return passLocalCheck(rule, context, node, acquireCount, prioritized);
     }
 
+    /**
+     * 本地流控规则检查
+     * @param rule
+     * @param context
+     * @param node
+     * @param acquireCount
+     * @param prioritized
+     * @return
+     */
     private static boolean passLocalCheck(FlowRule rule, Context context, DefaultNode node, int acquireCount,
                                           boolean prioritized) {
         Node selectedNode = selectNodeByRequesterAndStrategy(rule, context, node);

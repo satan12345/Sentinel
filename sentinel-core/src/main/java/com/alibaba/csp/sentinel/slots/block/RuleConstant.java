@@ -41,7 +41,13 @@ public final class RuleConstant {
 
     public static final int AUTHORITY_WHITE = 0;
     public static final int AUTHORITY_BLACK = 1;
-
+    /**
+     * 流控模式
+     *      直接
+     *      关联
+     *      链路
+     *
+     */
     public static final int STRATEGY_DIRECT = 0;
     public static final int STRATEGY_RELATE = 1;
     public static final int STRATEGY_CHAIN = 2;

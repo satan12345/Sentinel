@@ -32,6 +32,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 流控规则类
  */
 public class FlowRule extends AbstractRule {
 
@@ -63,6 +64,12 @@ public class FlowRule extends AbstractRule {
 
     /**
      * 流控模式
+     *
+     *      * 流控模式
+     *      *      直接
+     *      *      关联
+     *      *      链路
+
      * Flow control strategy based on invocation chain.
      *
      * {@link RuleConstant#STRATEGY_DIRECT} for direct flow control (by origin);
@@ -91,7 +98,9 @@ public class FlowRule extends AbstractRule {
      * Max queueing time in rate limiter behavior.
      */
     private int maxQueueingTimeMs = 500;
-
+    /**
+     * 是否是集群模式
+     */
     private boolean clusterMode;
     /**
      * Flow rule config for cluster mode.
@@ -102,7 +111,7 @@ public class FlowRule extends AbstractRule {
      * The traffic shaping (throttling) controller.
      * 流控效果对应的处理类
      * 快速失败：DefaultController
-     * Warm Up:WarmUpController
+     * Warm Up 预热:WarmUpController
      * 排队等待：RateLimiterController
      */
     private TrafficShapingController controller;

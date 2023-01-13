@@ -15,6 +15,7 @@
  */
 package com.alibaba.csp.sentinel.demo.spring.webmvc.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Controller;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.ModelAndView;
 public class WebMvcTestController {
 
     @GetMapping("/hello")
+    @SentinelResource
     @ResponseBody
     public String apiHello() {
         doBusiness();

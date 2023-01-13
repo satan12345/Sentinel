@@ -141,6 +141,21 @@ import java.util.Map;
 @Spi(order = Constants.ORDER_FLOW_SLOT)
 public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
+    /**
+     * 流控规则获取器 用于check的时候获取流控规则
+     */
+    private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
+        @Override
+        public Collection<FlowRule> apply(String resource) {
+            // Flow rule map should not be null.
+            Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
+            //获取指定资源的流控规则
+            return flowRules.get(resource);
+        }
+    };
+    /**
+     * 流控规则检查器
+     */
     private final FlowRuleChecker checker;
 
     public FlowSlot() {
@@ -167,6 +182,15 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }
 
+    /**
+     * 流控
+     * @param resource
+     * @param context
+     * @param node
+     * @param count
+     * @param prioritized
+     * @throws BlockException
+     */
     void checkFlow(ResourceWrapper resource, Context context, DefaultNode node, int count, boolean prioritized)
         throws BlockException {
         //流控检测
@@ -178,16 +202,5 @@ public class FlowSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
         fireExit(context, resourceWrapper, count, args);
     }
 
-    /**
-     * 流控规则获取器 用于check的时候获取流控规则
-     */
-    private final Function<String, Collection<FlowRule>> ruleProvider = new Function<String, Collection<FlowRule>>() {
-        @Override
-        public Collection<FlowRule> apply(String resource) {
-            // Flow rule map should not be null.
-            Map<String, List<FlowRule>> flowRules = FlowRuleManager.getFlowRuleMap();
-            //获取指定资源的流控规则
-            return flowRules.get(resource);
-        }
-    };
+
 }

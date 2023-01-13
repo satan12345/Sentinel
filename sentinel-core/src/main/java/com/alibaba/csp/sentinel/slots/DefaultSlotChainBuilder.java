@@ -50,9 +50,10 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
     @Override
     public ProcessorSlotChain build() {
         ProcessorSlotChain chain = new DefaultProcessorSlotChain();
+//        AbstractLinkedProcessorSlot<?> first = ((DefaultProcessorSlotChain) chain).getFirst();
         //获取SPI加载器
         SpiLoader<ProcessorSlot> spiLoader = SpiLoader.of(ProcessorSlot.class);
-        //加载指定Slot并排序
+        //加载指定Slot并排序 slot类上含有@Spi 注解 利用order属性进行排序
         List<ProcessorSlot> sortedSlotList = spiLoader.loadInstanceListSorted();
         for (ProcessorSlot slot : sortedSlotList) {
 

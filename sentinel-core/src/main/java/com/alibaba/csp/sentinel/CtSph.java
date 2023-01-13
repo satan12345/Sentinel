@@ -132,7 +132,7 @@ public class CtSph implements Sph {
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }
-        //寻找指定资源的执行链
+        //寻找指定资源的 责任处理链
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -193,7 +193,7 @@ public class CtSph implements Sph {
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
-        //或者资源的处理类
+        //获取资源的处理类
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
@@ -204,7 +204,7 @@ public class CtSph implements Sph {
 
                         return null;
                     }
-                    //初始化一个Chain
+                    //为指定的资源初始化一个Chain 责任处理链
                     chain = SlotChainProvider.newSlotChain();
                     //新创建一个map并把原来的map数据放入
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
@@ -348,8 +348,9 @@ public class CtSph implements Sph {
     @Override
     public Entry entryWithType(String name, int resourceType, EntryType entryType, int count, boolean prioritized,
                                Object[] args) throws BlockException {
-        //对资源进行保证
+        //对资源进行封装 资源名称 进出类型  资源类型
         StringResourceWrapper resource = new StringResourceWrapper(name, entryType, resourceType);
+
         return entryWithPriority(resource, count, prioritized, args);
     }
 

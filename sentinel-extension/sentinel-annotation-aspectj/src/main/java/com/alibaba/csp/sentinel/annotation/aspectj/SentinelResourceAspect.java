@@ -35,6 +35,9 @@ import java.lang.reflect.Method;
 @Aspect
 public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
 
+    /**
+     * 切入点  切的是注解 SentinelResource
+     */
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void sentinelResourceAnnotationPointcut() {
     }
@@ -48,17 +51,17 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
     @Around("sentinelResourceAnnotationPointcut()")
     public Object invokeResourceWithSentinel(ProceedingJoinPoint pjp) throws Throwable {
         Method originMethod = resolveMethod(pjp);
-
+        //获取方法上的注解 SentinelResource
         SentinelResource annotation = originMethod.getAnnotation(SentinelResource.class);
         if (annotation == null) {
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
-        //资源名称
+        //资源名称 即方法的名称
         String resourceName = getResourceName(annotation.value(), originMethod);
-        //EntryType.OUT
+        //默认值  EntryType.OUT
         EntryType entryType = annotation.entryType();
-        //默认值为0
+        //资源类型 默认值为0
         int resourceType = annotation.resourceType();
         Entry entry = null;
         try {

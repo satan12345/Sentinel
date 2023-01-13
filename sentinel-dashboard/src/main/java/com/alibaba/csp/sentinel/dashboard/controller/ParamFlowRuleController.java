@@ -15,6 +15,11 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller;
 
+import com.alibaba.csp.sentinel.dashboard.client.CommandFailedException;
+import com.alibaba.csp.sentinel.dashboard.datasource.entity.rule.DegradeRuleEntity;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
+import com.alibaba.csp.sentinel.dashboard.util.AsyncUtils;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +41,8 @@ import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.repository.rule.RuleRepository;
 import com.alibaba.csp.sentinel.dashboard.util.VersionUtils;
 
+import java.util.function.Supplier;
+import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +57,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * 热点参数规则控制器
  * @author Eric Zhao
  * @since 0.2.1
  */
@@ -59,8 +67,16 @@ public class ParamFlowRuleController {
 
     private final Logger logger = LoggerFactory.getLogger(ParamFlowRuleController.class);
 
-    @Autowired
-    private SentinelApiClient sentinelApiClient;
+//    @Autowired
+//    private SentinelApiClient sentinelApiClient;
+    /**
+     * 热点参数规则供给器
+     */
+    @Resource
+    DynamicRuleProvider<List<ParamFlowRuleEntity>> tulingHotParamFlowRuleNacosProvider;
+
+    @Resource
+    DynamicRulePublisher<List<ParamFlowRuleEntity>> tulingHotParamFlowRuleNacosPublisher;
     @Autowired
     private AppManagement appManagement;
     @Autowired
@@ -97,10 +113,13 @@ public class ParamFlowRuleController {
             return unsupportedVersion();
         }
         try {
-            return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
-                .thenApply(repository::saveAll)
-                .thenApply(Result::ofSuccess)
-                .get();
+            List<ParamFlowRuleEntity> rules = tulingHotParamFlowRuleNacosProvider.getRules(app);
+            rules = repository.saveAll(rules);
+            return Result.ofSuccess(rules);
+//            return sentinelApiClient.fetchParamFlowRulesOfMachine(app, ip, port)
+//                .thenApply(repository::saveAll)
+//                .thenApply(Result::ofSuccess)
+//                .get();
         } catch (ExecutionException ex) {
             logger.error("Error when querying parameter flow rules", ex.getCause());
             if (isNotSupported(ex.getCause())) {
@@ -257,7 +276,25 @@ public class ParamFlowRuleController {
 
     private CompletableFuture<Void> publishRules(String app, String ip, Integer port) {
         List<ParamFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.setParamFlowRuleOfMachine(app, ip, port, rules);
+        CompletableFuture<Void> completableFuture = CompletableFuture.supplyAsync(new Supplier<String>() {
+            @Override
+            public String get() {
+                try {
+                    tulingHotParamFlowRuleNacosPublisher.publish(app, rules);
+                    return  "success";
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return "failed";
+            }
+        }).thenCompose(r -> {
+            if ("success".equalsIgnoreCase(r.trim())) {
+                return CompletableFuture.completedFuture(null);
+            }
+            return AsyncUtils.newFailedFuture(new CommandFailedException(r));
+        });
+        return completableFuture;
+//        return sentinelApiClient.setParamFlowRuleOfMachine(app, ip, port, rules);
     }
 
     private <R> Result<R> unsupportedVersion() {

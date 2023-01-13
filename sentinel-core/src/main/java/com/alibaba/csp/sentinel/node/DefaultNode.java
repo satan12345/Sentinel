@@ -37,11 +37,13 @@ import com.alibaba.csp.sentinel.slots.nodeselector.NodeSelectorSlot;
  *
  * @author qinan.qn
  * @see NodeSelectorSlot
+ * 统计指标类
  */
 public class DefaultNode extends StatisticNode {
 
     /**
      * The resource associated with the node.
+     * 资源的包装类
      */
     private ResourceWrapper id;
 
@@ -52,6 +54,7 @@ public class DefaultNode extends StatisticNode {
 
     /**
      * Associated cluster node.
+     * 集群的统计数据
      */
     private ClusterNode clusterNode;
 

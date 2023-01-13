@@ -31,7 +31,9 @@ public abstract class ResourceWrapper {
      * 资源名
      */
     protected final String name;
-
+    /**
+     * 进出类型
+     */
     protected final EntryType entryType;
     /**
      * 资源类型

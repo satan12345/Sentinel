@@ -153,6 +153,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
          * The answer is all {@link DefaultNode}s with same resource name share one
          * {@link ClusterNode}. See {@link ClusterBuilderSlot} for detail.
          */
+        //这个DefaultNode 是一个统计数据的封装类 用于传给后续保存统计数据使用
         DefaultNode node = map.get(context.getName());
         if (node == null) {
             synchronized (this) {
@@ -169,7 +170,7 @@ public class NodeSelectorSlot extends AbstractLinkedProcessorSlot<Object> {
 
             }
         }
-
+        //为上下文绑定统计的节点
         context.setCurNode(node);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }

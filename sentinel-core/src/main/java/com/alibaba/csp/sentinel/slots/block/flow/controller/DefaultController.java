@@ -54,7 +54,7 @@ public class DefaultController implements TrafficShapingController {
     }
 
     /**
-     * 检测是否可以通过
+     * 快速失败 检测是否可以通过
      * @param node resource node
      * @param acquireCount count to acquire
      * @param prioritized whether the request is prioritized
@@ -64,7 +64,7 @@ public class DefaultController implements TrafficShapingController {
     public boolean canPass(Node node, int acquireCount, boolean prioritized) {
         //计算现在的统计数据
         int curCount = avgUsedTokens(node);
-            //判断是否超过限制
+            //判断是否超过限制（已经统计到的数值+1 判断是否大于阈值）
         if (curCount + acquireCount > count) {
             //prioritized  默认为false
             if (prioritized && grade == RuleConstant.FLOW_GRADE_QPS) {
@@ -87,6 +87,11 @@ public class DefaultController implements TrafficShapingController {
         return true;
     }
 
+    /**
+     * 根据流控的类型 获得对应的统计的数值
+     * @param node
+     * @return
+     */
     private int avgUsedTokens(Node node) {
         if (node == null) {
             return DEFAULT_AVG_USED_TOKENS;

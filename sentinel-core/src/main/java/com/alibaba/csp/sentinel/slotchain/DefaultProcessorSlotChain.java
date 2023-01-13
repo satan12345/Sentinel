@@ -22,6 +22,10 @@ import com.alibaba.csp.sentinel.context.Context;
  * @author jialiang.linjl
  */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
+
+    public AbstractLinkedProcessorSlot<?> getFirst(){
+        return first;
+    }
     //创建一个链条的头结点
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
 
@@ -89,7 +93,7 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)
         throws Throwable {
-
+        System.out.println("t = " + t);
         first.transformEntry(context, resourceWrapper, t, count, prioritized, args);
     }
 

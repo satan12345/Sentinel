@@ -56,10 +56,14 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                       boolean prioritized, Object... args) throws Throwable {
         try {
             // Do some checking.
+            /**
+             * 这里调用的后续的Slot 只有当后续的Slot 调用完成之后
+             * 下面的才统计
+             */
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
 
             // Request passed, add thread count and pass count.
-            // 增加线程数
+            // 增加统计的线程数
             node.increaseThreadNum();
             //增加通过的请求数 count为1
             node.addPassRequest(count);
@@ -81,6 +85,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (PriorityWaitException ex) {
+            //调用发生异常
             node.increaseThreadNum();
             if (context.getCurEntry().getOriginNode() != null) {
                 // Add count for origin node.

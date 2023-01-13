@@ -37,7 +37,7 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
     private final EventObserverRegistry observerRegistry;
     /**
-     * 断路器的状态
+     * 断路器的状态 默认是关闭的
      */
     protected final AtomicReference<State> currentState = new AtomicReference<>(State.CLOSED);
     protected volatile long nextRetryTimestamp;
@@ -77,8 +77,8 @@ public abstract class AbstractCircuitBreaker implements CircuitBreaker {
 
             /**
              * 断路器是打开的
-             * 1retryTimeoutArrived() 先比较是否已经到了可以重试的时间
-             * 2将打开状态设置为半开状态 放过一个请求进行业务调用 失败则将半开变成打开
+             * 1 retryTimeoutArrived() 先比较是否已经到了可以重试的时间
+             * 2 将打开状态设置为半开状态 放过一个请求进行业务调用 失败则将半开变成打开
              */
             // For half-open state we allow a request for probing.
             return retryTimeoutArrived() && fromOpenToHalfOpen(context);
