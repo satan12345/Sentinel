@@ -31,11 +31,20 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.occupy.OccupiableBucketLe
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 数据统计类
  */
 public class ArrayMetric implements Metric {
 
+    /**
+     * 存放统计数据的桶
+     */
     private final LeapArray<MetricBucket> data;
 
+    /**
+     *
+     * @param sampleCount 样本数量
+     * @param intervalInMs 统计时间间隔
+     */
     public ArrayMetric(int sampleCount, int intervalInMs) {
         this.data = new OccupiableBucketLeapArray(sampleCount, intervalInMs);
     }
@@ -217,7 +226,10 @@ public class ArrayMetric implements Metric {
 
     @Override
     public void addPass(int count) {
+        //OccupiableBucketLeapArray
+        //获取当前的窗口
         WindowWrap<MetricBucket> wrap = data.currentWindow();
+        //增通过请求的数量
         wrap.value().addPass(count);
     }
 

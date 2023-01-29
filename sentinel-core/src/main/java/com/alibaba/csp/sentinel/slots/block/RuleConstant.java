@@ -25,14 +25,18 @@ public final class RuleConstant {
 
     public static final int FLOW_GRADE_THREAD = 0;
     public static final int FLOW_GRADE_QPS = 1;
-
+    /**
+     * 降级策略  响应时间RT
+     */
     public static final int DEGRADE_GRADE_RT = 0;
     /**
      * Degrade by biz exception ratio in the current {@link IntervalProperty#INTERVAL} second(s).
+     * 降级策略 异常比例
      */
     public static final int DEGRADE_GRADE_EXCEPTION_RATIO = 1;
     /**
      * Degrade by biz exception count in the last 60 seconds.
+     * 降级策略 异常数
      */
     public static final int DEGRADE_GRADE_EXCEPTION_COUNT = 2;
 

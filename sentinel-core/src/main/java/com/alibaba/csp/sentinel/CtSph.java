@@ -116,6 +116,7 @@ public class CtSph implements Sph {
 
     private Entry entryWithPriority(ResourceWrapper resourceWrapper, int count, boolean prioritized, Object... args)
         throws BlockException {
+        //获取上下文对象
         Context context = ContextUtil.getContext();
         if (context instanceof NullContext) {
             // The {@link NullContext} indicates that the amount of context has exceeded the threshold,
@@ -132,7 +133,7 @@ public class CtSph implements Sph {
         if (!Constants.ON) {
             return new CtEntry(resourceWrapper, null, context);
         }
-
+        //获取资源对应的处理责任链
         ProcessorSlot<Object> chain = lookProcessChain(resourceWrapper);
 
         /*
@@ -145,6 +146,7 @@ public class CtSph implements Sph {
 
         Entry e = new CtEntry(resourceWrapper, chain, context);
         try {
+            //执行处理链
             chain.entry(context, resourceWrapper, null, count, prioritized, args);
         } catch (BlockException e1) {
             e.exit(count, args);
@@ -192,6 +194,7 @@ public class CtSph implements Sph {
      * @return {@link ProcessorSlotChain} of the resource
      */
     ProcessorSlot<Object> lookProcessChain(ResourceWrapper resourceWrapper) {
+        //DCL 检查
         ProcessorSlotChain chain = chainMap.get(resourceWrapper);
         if (chain == null) {
             synchronized (LOCK) {
@@ -201,7 +204,7 @@ public class CtSph implements Sph {
                     if (chainMap.size() >= Constants.MAX_SLOT_CHAIN_SIZE) {
                         return null;
                     }
-
+                    //为指定的资源设置处理链
                     chain = SlotChainProvider.newSlotChain();
                     Map<ResourceWrapper, ProcessorSlotChain> newMap = new HashMap<ResourceWrapper, ProcessorSlotChain>(
                         chainMap.size() + 1);
@@ -307,7 +310,9 @@ public class CtSph implements Sph {
 
     @Override
     public Entry entry(String name, EntryType type, int count, Object... args) throws BlockException {
+        //封装资源名与entry type
         StringResourceWrapper resource = new StringResourceWrapper(name, type);
+
         return entry(resource, count, args);
     }
 

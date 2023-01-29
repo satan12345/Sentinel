@@ -37,6 +37,9 @@ public class DefaultSlotChainBuilder implements SlotChainBuilder {
 
     @Override
     public ProcessorSlotChain build() {
+        /**
+         * 封装处理链
+         */
         ProcessorSlotChain chain = new DefaultProcessorSlotChain();
         chain.addLast(new NodeSelectorSlot());
         chain.addLast(new ClusterBuilderSlot());

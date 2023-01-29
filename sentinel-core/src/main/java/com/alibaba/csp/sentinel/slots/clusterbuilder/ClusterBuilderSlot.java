@@ -87,6 +87,7 @@ public class ClusterBuilderSlot extends AbstractLinkedProcessorSlot<DefaultNode>
                 }
             }
         }
+        //为统计数据节点绑定集群统计的参数对象
         node.setClusterNode(clusterNode);
 
         /*

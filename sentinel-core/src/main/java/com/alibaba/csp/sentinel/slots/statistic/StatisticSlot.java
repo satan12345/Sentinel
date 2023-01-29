@@ -45,6 +45,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 数据统计槽位
  */
 public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
@@ -52,9 +53,11 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count,
                       boolean prioritized, Object... args) throws Throwable {
         try {
+            //调用后续的责任链
             // Do some checking.
             fireEntry(context, resourceWrapper, node, count, prioritized, args);
 
+            //请求通过 增加线程数与统计数
             // Request passed, add thread count and pass count.
             node.increaseThreadNum();
             node.addPassRequest(count);
@@ -91,6 +94,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
                 handler.onPass(context, resourceWrapper, node, count, args);
             }
         } catch (BlockException e) {
+            //限流异常 统计指标
             // Blocked, set block exception to current entry.
             context.getCurEntry().setError(e);
 
@@ -112,6 +116,7 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
             throw e;
         } catch (Throwable e) {
+            //业务异常
             // Unexpected error, set error to current entry.
             context.getCurEntry().setError(e);
 
@@ -134,11 +139,13 @@ public class StatisticSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
         if (context.getCurEntry().getError() == null) {
             // Calculate response time (max RT is TIME_DROP_VALVE).
+            //当前时间戳- entry创建时的时间戳 算出响应时间
             long rt = TimeUtil.currentTimeMillis() - context.getCurEntry().getCreateTime();
             if (rt > Constants.TIME_DROP_VALVE) {
+                //响应时间超过最大响应时间设置上线
                 rt = Constants.TIME_DROP_VALVE;
             }
-
+            //在slot 退出之后 记录响应时间与数量
             // Record response time and success count.
             node.addRtAndSuccess(rt, count);
             if (context.getCurEntry().getOriginNode() != null) {

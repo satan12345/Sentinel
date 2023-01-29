@@ -20,14 +20,20 @@ import com.alibaba.csp.sentinel.context.Context;
 /**
  * @author qinan.qn
  * @author jialiang.linjl
+ * 资源处理链
  */
 public class DefaultProcessorSlotChain extends ProcessorSlotChain {
 
+    /**
+     * 第一个处理链
+     */
     AbstractLinkedProcessorSlot<?> first = new AbstractLinkedProcessorSlot<Object>() {
 
         @Override
         public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)
             throws Throwable {
+            //fireEntry 的实现为调用下一个slot的transformEntry
+            //而transformEntry 会调用entry方法
             super.fireEntry(context, resourceWrapper, t, count, prioritized, args);
         }
 
@@ -72,6 +78,7 @@ public class DefaultProcessorSlotChain extends ProcessorSlotChain {
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, Object t, int count, boolean prioritized, Object... args)
         throws Throwable {
+        //执行第一个处理链
         first.transformEntry(context, resourceWrapper, t, count, prioritized, args);
     }
 

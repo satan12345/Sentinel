@@ -69,6 +69,7 @@ public class DegradeRule extends AbstractRule {
 
     /**
      * RT threshold or exception ratio threshold count.
+     * 降级响应时间的阈值
      */
     private double count;
 
@@ -77,11 +78,13 @@ public class DegradeRule extends AbstractRule {
      */
     private int timeWindow;
 
-    /**
+    /**降级策略 0 响应时间  1 异常比例
      * Degrade strategy (0: average RT, 1: exception ratio).
      */
     private int grade = RuleConstant.DEGRADE_GRADE_RT;
-
+    /**
+     * 断路器的标记位 默认未断开
+     */
     private final AtomicBoolean cut = new AtomicBoolean(false);
 
     public int getGrade() {
@@ -160,9 +163,18 @@ public class DegradeRule extends AbstractRule {
         return result;
     }
 
+    /**
+     * 降级检测
+     * @param context current {@link Context}
+     * @param node    current {@link com.alibaba.csp.sentinel.node.Node}
+     * @param acquireCount
+     * @param args    arguments of the original invocation.
+     * @return
+     */
     @Override
     public boolean passCheck(Context context, DefaultNode node, int acquireCount, Object... args) {
         if (cut.get()) {
+            //如果断路器已经断开 则直接返回不通过
             return false;
         }
 
@@ -172,8 +184,11 @@ public class DegradeRule extends AbstractRule {
         }
 
         if (grade == RuleConstant.DEGRADE_GRADE_RT) {
+            //降级规则为 响应时间
+            //获取统计到的平均响应时间
             double rt = clusterNode.avgRt();
             if (rt < this.count) {
+                //平均响应时间小于阈值
                 passCount.set(0);
                 return true;
             }
@@ -183,25 +198,31 @@ public class DegradeRule extends AbstractRule {
                 return true;
             }
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_RATIO) {
+            //降级规则为异常比例
             double exception = clusterNode.exceptionQps();
             double success = clusterNode.successQps();
             double total = clusterNode.totalQps();
             // if total qps less than RT_MAX_EXCEED_N, pass.
             if (total < RT_MAX_EXCEED_N) {
+                //总的请求数小于5 不计算比例 直接通过
                 return true;
             }
 
             double realSuccess = success - exception;
             if (realSuccess <= 0 && exception < RT_MAX_EXCEED_N) {
+                //成功数小于0 且异常数小于5 也直接通过检测
                 return true;
             }
 
             if (exception / success < count) {
+                //异常数/成功数 小于异常比例的阈值 也通过检测
                 return true;
             }
         } else if (grade == RuleConstant.DEGRADE_GRADE_EXCEPTION_COUNT) {
+            //降级规则为异常数
             double exception = clusterNode.totalException();
             if (exception < count) {
+                //异常数小于阈值 通过检测
                 return true;
             }
         }

@@ -89,13 +89,15 @@ import com.alibaba.csp.sentinel.slots.statistic.metric.Metric;
 public class StatisticNode implements Node {
 
     /**
+     * 保存最近的滚动统计数据-按秒统计
      * Holds statistics of the recent {@code INTERVAL} seconds. The {@code INTERVAL} is divided into time spans
      * by given {@code sampleCount}.
      */
-    private transient volatile Metric rollingCounterInSecond = new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
+    private transient volatile Metric rollingCounterInSecond =
+        new ArrayMetric(SampleCountProperty.SAMPLE_COUNT,
         IntervalProperty.INTERVAL);
 
-    /**
+    /**分钟统计的数据
      * Holds statistics of the recent 60 seconds. The windowLengthInMs is deliberately set to 1000 milliseconds,
      * meaning each bucket per second, in this way we can get accurate statistics of each second.
      */
@@ -103,6 +105,7 @@ public class StatisticNode implements Node {
 
     /**
      * The counter for thread count.
+     * 统计线程数
      */
     private AtomicInteger curThreadNum = new AtomicInteger(0);
 
@@ -236,6 +239,10 @@ public class StatisticNode implements Node {
         return curThreadNum.get();
     }
 
+    /**
+     * 增加通过的请求数
+     * @param count count to add pass
+     */
     @Override
     public void addPassRequest(int count) {
         rollingCounterInSecond.addPass(count);
@@ -251,12 +258,20 @@ public class StatisticNode implements Node {
         rollingCounterInMinute.addRT(rt);
     }
 
+    /**
+     * 记录限流的数量
+     * @param count count to add
+     */
     @Override
     public void increaseBlockQps(int count) {
         rollingCounterInSecond.addBlock(count);
         rollingCounterInMinute.addBlock(count);
     }
 
+    /**
+     * 记录业务异常数
+     * @param count count to add
+     */
     @Override
     public void increaseExceptionQps(int count) {
         rollingCounterInSecond.addException(count);

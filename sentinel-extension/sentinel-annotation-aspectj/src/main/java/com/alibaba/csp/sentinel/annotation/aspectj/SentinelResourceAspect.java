@@ -35,6 +35,9 @@ import java.lang.reflect.Method;
 @Aspect
 public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
 
+    /**
+     * 切入点 切@SentinelResource这个注解
+     */
     @Pointcut("@annotation(com.alibaba.csp.sentinel.annotation.SentinelResource)")
     public void sentinelResourceAnnotationPointcut() {
     }
@@ -42,22 +45,29 @@ public class SentinelResourceAspect extends AbstractSentinelAspectSupport {
     @Around("sentinelResourceAnnotationPointcut()")
     public Object invokeResourceWithSentinel(ProceedingJoinPoint pjp) throws Throwable {
         Method originMethod = resolveMethod(pjp);
-
+        //获取方法上的注解
         SentinelResource annotation = originMethod.getAnnotation(SentinelResource.class);
         if (annotation == null) {
+            //切的是这个注解 但是方法上却获取不到这个注解 存在异常
             // Should not go through here.
             throw new IllegalStateException("Wrong state for SentinelResource annotation");
         }
+        //获取资源名
         String resourceName = getResourceName(annotation.value(), originMethod);
+        // 默认值为 EntryType.OUT
         EntryType entryType = annotation.entryType();
         Entry entry = null;
         try {
+            //进入流控规则 请求数量传值为1
             entry = SphU.entry(resourceName, entryType, 1, pjp.getArgs());
+            //正常业务
             Object result = pjp.proceed();
             return result;
         } catch (BlockException ex) {
+            //流控的异常
             return handleBlockException(pjp, annotation, ex);
         } catch (Throwable ex) {
+            //业务上的异常
             Class<? extends Throwable>[] exceptionsToIgnore = annotation.exceptionsToIgnore();
             // The ignore list will be checked first.
             if (exceptionsToIgnore.length > 0 && exceptionBelongsTo(ex, exceptionsToIgnore)) {

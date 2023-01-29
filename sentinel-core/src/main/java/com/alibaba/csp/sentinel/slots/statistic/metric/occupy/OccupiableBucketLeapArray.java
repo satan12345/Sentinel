@@ -36,10 +36,17 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
         this.borrowArray = new FutureBucketLeapArray(sampleCount, intervalInMs);
     }
 
+    /**
+     * 创建 统计的bucket
+     * @param time
+     * @return
+     */
     @Override
     public MetricBucket newEmptyBucket(long time) {
         MetricBucket newBucket = new MetricBucket();
-
+        /**
+         * 获取指定时间窗口统计数据
+         */
         MetricBucket borrowBucket = borrowArray.getWindowValue(time);
         if (borrowBucket != null) {
             newBucket.reset(borrowBucket);
@@ -54,9 +61,12 @@ public class OccupiableBucketLeapArray extends LeapArray<MetricBucket> {
         w.resetTo(time);
         MetricBucket borrowBucket = borrowArray.getWindowValue(time);
         if (borrowBucket != null) {
+            //将新的时间窗口的统计数据设置到老的时间窗口上
             w.value().reset();
+            //增加通过的数据
             w.value().addPass((int)borrowBucket.pass());
         } else {
+            //重置所有的统计数据
             w.value().reset();
         }
 

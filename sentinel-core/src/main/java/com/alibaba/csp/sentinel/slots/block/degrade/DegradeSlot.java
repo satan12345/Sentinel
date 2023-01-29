@@ -25,12 +25,14 @@ import com.alibaba.csp.sentinel.slotchain.ResourceWrapper;
  * A {@link ProcessorSlot} dedicates to {@link DegradeRule} checking.
  *
  * @author leyou
+ * 降级的Slot
  */
 public class DegradeSlot extends AbstractLinkedProcessorSlot<DefaultNode> {
 
     @Override
     public void entry(Context context, ResourceWrapper resourceWrapper, DefaultNode node, int count, boolean prioritized, Object... args)
         throws Throwable {
+        //降级检测
         DegradeRuleManager.checkDegrade(resourceWrapper, context, node, count);
         fireEntry(context, resourceWrapper, node, count, prioritized, args);
     }

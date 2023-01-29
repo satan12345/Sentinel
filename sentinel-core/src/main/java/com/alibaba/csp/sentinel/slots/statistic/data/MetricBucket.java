@@ -27,6 +27,9 @@ import com.alibaba.csp.sentinel.slots.statistic.base.LongAdder;
  */
 public class MetricBucket {
 
+    /**
+     * 用一个数组保存各个统计指标
+     */
     private final LongAdder[] counters;
 
     private volatile long minRt;
@@ -40,6 +43,11 @@ public class MetricBucket {
         initMinRt();
     }
 
+    /**
+     * 将bucket的统计数据设置到当前的bucket中
+     * @param bucket
+     * @return
+     */
     public MetricBucket reset(MetricBucket bucket) {
         for (MetricEvent event : MetricEvent.values()) {
             counters[event.ordinal()].reset();
@@ -70,6 +78,12 @@ public class MetricBucket {
         return counters[event.ordinal()].sum();
     }
 
+    /**
+     * 根据对应的统计指标 对数组对应位的数量增加
+     * @param event
+     * @param n
+     * @return
+     */
     public MetricBucket add(MetricEvent event, long n) {
         counters[event.ordinal()].add(n);
         return this;
@@ -103,6 +117,10 @@ public class MetricBucket {
         return get(MetricEvent.SUCCESS);
     }
 
+    /**
+     * 增加通過的請求数
+     * @param n
+     */
     public void addPass(int n) {
         add(MetricEvent.PASS, n);
     }
@@ -119,6 +137,10 @@ public class MetricBucket {
         add(MetricEvent.BLOCK, n);
     }
 
+    /**
+     * 记录通过的请求数
+     * @param n
+     */
     public void addSuccess(int n) {
         add(MetricEvent.SUCCESS, n);
     }
@@ -128,6 +150,7 @@ public class MetricBucket {
 
         // Not thread-safe, but it's okay.
         if (rt < minRt) {
+            //记录最小的相应时间
             minRt = rt;
         }
     }

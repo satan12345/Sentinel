@@ -31,7 +31,9 @@ import com.alibaba.csp.sentinel.slots.DefaultSlotChainBuilder;
 public final class SlotChainProvider {
 
     private static volatile SlotChainBuilder builder = null;
-
+    /**
+     * 利用SPI机制 获取默认的责任链构建器
+     */
     private static final ServiceLoader<SlotChainBuilder> LOADER = ServiceLoader.load(SlotChainBuilder.class);
 
     /**
@@ -51,10 +53,18 @@ public final class SlotChainProvider {
             RecordLog.warn("[SlotChainProvider] Wrong state when resolving slot chain builder, using default");
             builder = new DefaultSlotChainBuilder();
         }
+        //构建资源处理链
         return builder.build();
     }
 
+    /**
+     * 获取处理链的构建器
+     */
     private static void resolveSlotChainBuilder() {
+        /**
+         * 如果存在多个 SlotChainBuilder的实现类 优先使用非默认的构建器
+         * 即优先不使用 DefaultSlotChainBuilder
+         */
         List<SlotChainBuilder> list = new ArrayList<SlotChainBuilder>();
         boolean hasOther = false;
         for (SlotChainBuilder builder : LOADER) {

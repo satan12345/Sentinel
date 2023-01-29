@@ -52,6 +52,7 @@ public class DefaultNode extends StatisticNode {
 
     /**
      * Associated cluster node.
+     * 关联集群统计的数据
      */
     private ClusterNode clusterNode;
 
@@ -118,15 +119,25 @@ public class DefaultNode extends StatisticNode {
         this.clusterNode.increaseExceptionQps(count);
     }
 
+    /**
+     * 记录响应时间与请求数量
+     * @param rt
+     * @param successCount
+     */
     @Override
     public void addRtAndSuccess(long rt, int successCount) {
         super.addRtAndSuccess(rt, successCount);
         this.clusterNode.addRtAndSuccess(rt, successCount);
     }
 
+    /**
+     * 增加线程数
+     */
     @Override
     public void increaseThreadNum() {
+        //本机增加线程数
         super.increaseThreadNum();
+        //集群统计增加线程数
         this.clusterNode.increaseThreadNum();
     }
 
@@ -136,9 +147,15 @@ public class DefaultNode extends StatisticNode {
         this.clusterNode.decreaseThreadNum();
     }
 
+    /**
+     * 增加通过的请求数
+     * @param count
+     */
     @Override
     public void addPassRequest(int count) {
+        //本节点增加通过的请求数
         super.addPassRequest(count);
+        //集群增加通过的请求数
         this.clusterNode.addPassRequest(count);
     }
 

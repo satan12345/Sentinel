@@ -25,6 +25,7 @@ import com.alibaba.csp.sentinel.slots.statistic.data.MetricBucket;
  *
  * @author jialiang.linjl
  * @author Eric Zhao
+ * 统计的接口
  */
 public interface Metric extends DebugSupport {
 
@@ -107,12 +108,13 @@ public interface Metric extends DebugSupport {
 
     /**
      * Add current completed count.
-     *
+     * 增加完成的请求数 不管成功还是失败的
      * @param n count to add
      */
     void addSuccess(int n);
 
     /**
+     * 增加通过的请求数
      * Add current pass count.
      *
      * @param n count to add
