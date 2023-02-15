@@ -41,11 +41,13 @@ public class FlowRuleNacosProvider implements DynamicRuleProvider<List<FlowRuleE
 
     @Override
     public List<FlowRuleEntity> getRules(String appName) throws Exception {
+        //从nacos服务上获取流控规则
         String rules = configService.getConfig(appName + NacosConfigUtil.FLOW_DATA_ID_POSTFIX,
             NacosConfigUtil.GROUP_ID, 3000);
         if (StringUtil.isEmpty(rules)) {
             return new ArrayList<>();
         }
+        //将流控规则字符串转换成流控规则列表
         return converter.convert(rules);
     }
 }

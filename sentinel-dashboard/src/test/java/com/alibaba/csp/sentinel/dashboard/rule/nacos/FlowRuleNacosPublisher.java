@@ -33,8 +33,14 @@ import org.springframework.stereotype.Component;
 @Component("flowRuleNacosPublisher")
 public class FlowRuleNacosPublisher implements DynamicRulePublisher<List<FlowRuleEntity>> {
 
+    /**
+     * Nacos配置服务器
+     */
     @Autowired
     private ConfigService configService;
+    /**
+     * 转换器
+     */
     @Autowired
     private Converter<List<FlowRuleEntity>, String> converter;
 
@@ -44,7 +50,10 @@ public class FlowRuleNacosPublisher implements DynamicRulePublisher<List<FlowRul
         if (rules == null) {
             return;
         }
+        //规则转换成String
+        String ruleString = converter.convert(rules);
+        //发布配置到naocs上
         configService.publishConfig(app + NacosConfigUtil.FLOW_DATA_ID_POSTFIX,
-            NacosConfigUtil.GROUP_ID, converter.convert(rules));
+            NacosConfigUtil.GROUP_ID, ruleString);
     }
 }

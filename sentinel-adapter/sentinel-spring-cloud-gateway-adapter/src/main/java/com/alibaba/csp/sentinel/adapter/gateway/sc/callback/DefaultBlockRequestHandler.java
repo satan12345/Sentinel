@@ -58,6 +58,20 @@ public class DefaultBlockRequestHandler implements BlockRequestHandler {
             DEFAULT_BLOCK_MSG_PREFIX + ex.getClass().getSimpleName());
     }
 
+//    private TulingBlockRequestHandler.ErrorResult buildErrorResult(Throwabl
+//        e ex) {
+//         if(ex instanceof ParamFlowException) {
+//             return new TulingBlockRequestHandler.ErrorResult(HttpStatus.TOO_MANY_RE
+//                QUESTS.value(),"block");
+//             }else if (ex instanceof DegradeException) {
+//             return new TulingBlockRequestHandler.ErrorResult(HttpStatus.TOO_MANY_RE
+//                QUESTS.value(),"fallback");
+//             }else{
+//             return new
+//                TulingBlockRequestHandler.ErrorResult(HttpStatus.BAD_GATEWAY.value(),"gatew
+//                ay error");
+//                 }
+
     /**
      * Reference from {@code DefaultErrorWebExceptionHandler} of Spring Boot.
      */

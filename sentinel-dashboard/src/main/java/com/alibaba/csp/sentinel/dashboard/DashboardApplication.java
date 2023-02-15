@@ -17,6 +17,7 @@ package com.alibaba.csp.sentinel.dashboard;
 
 import com.alibaba.csp.sentinel.init.InitExecutor;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -29,6 +30,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DashboardApplication {
 
     public static void main(String[] args) {
+        String namespace = System.getProperty("namespace");
+        String nacosHost = System.getProperty("nacos.host");
+        if (StringUtils.isEmpty(namespace)) {
+            throw new RuntimeException("命名空间不能为空");
+        }
+        if (StringUtils.isEmpty(nacosHost)) {
+            throw new RuntimeException("nacos服务器地址不能为空");
+        }
         triggerSentinelInit();
         SpringApplication.run(DashboardApplication.class, args);
     }

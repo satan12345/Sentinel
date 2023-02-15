@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Flow rule controller.
+ * 流控控制台
  *
  * @author leyou
  * @author Eric Zhao
@@ -80,6 +81,14 @@ public class FlowControllerV1 {
   @Qualifier("tulingFlowRuleNacosPublisher")
   private DynamicRulePublisher<List<FlowRuleEntity>> rulePublisher;
 
+  /**
+   * 查询指定机器的流控规则
+   * @param app
+   * @param ip
+   * @param port
+   * @return
+   */
+  //http://localhost:9999//v1/flow/rules?app=user-service&ip=172.31.1.1&port=8720
   @GetMapping("/rules")
   @AuthAction(PrivilegeType.READ_RULE)
   public Result<List<FlowRuleEntity>> apiQueryMachineRules(@RequestParam String app,
@@ -154,6 +163,28 @@ public class FlowControllerV1 {
     return null;
   }
 
+  /**
+   * 流控规则保存
+   * http://localhost:9999//v1/flow/rule
+   * {
+   * 	"enable": false,
+   * 	"strategy": 0,
+   * 	"grade": "1",
+   * 	"controlBehavior": 0,
+   * 	"resource": "/user/me",
+   * 	"limitApp": "default",
+   * 	"clusterMode": false,
+   * 	"clusterConfig": {
+   * 		"thresholdType": 0
+   *    },
+   * 	"app": "user-service",
+   * 	"ip": "172.31.1.1",
+   * 	"port": "8720",
+   * 	"count": 1
+   * }
+   * @param entity
+   * @return
+   */
   @PostMapping("/rule")
   @AuthAction(PrivilegeType.WRITE_RULE)
   public Result<FlowRuleEntity> apiAddFlowRule(@RequestBody FlowRuleEntity entity) {
@@ -169,7 +200,7 @@ public class FlowControllerV1 {
     entity.setResource(entity.getResource().trim());
     try {
       entity = repository.save(entity);
-
+      //持久化规则
       publishRules(entity.getApp(), entity.getIp(), entity.getPort())
           .get(5000, TimeUnit.MILLISECONDS);
       return Result.ofSuccess(entity);
@@ -262,7 +293,8 @@ public class FlowControllerV1 {
       return Result.ofFail(-1, e.getMessage());
     }
   }
-
+  //删除流控规则
+  //http://localhost:9999//v1/flow/delete.json?app=user-service&id=1
   @DeleteMapping("/delete.json")
   @AuthAction(PrivilegeType.WRITE_RULE)
   public Result<Long> apiDeleteFlowRule(Long id) {
@@ -307,6 +339,7 @@ public class FlowControllerV1 {
       @Override
       public String get() {
         try {
+          //保存规则
           rulePublisher.publish(app, rules);
           return  "success";
         } catch (Exception e) {
